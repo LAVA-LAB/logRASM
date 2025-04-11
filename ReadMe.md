@@ -268,8 +268,9 @@ python train_SB3.py --model LinearSystem --layout 0 --algorithm TRPO --total_ste
 
 The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C (see [Section 5](#4.-reproducing-results-from-the-paper) for details).
 
-> **_NOTE:_**
->
+> **_NOTE:_** We have experience issues running Stable-Baselines3 within the Docker container with GPU acceleration. run the `train_SB3.py` script above, please run the Docker
+> container without GPU acceleration or build the code from source. Also, all Stable-Baselines3 policies needed to reproduce the results from [1] are already provided with the
+> code.
 
 # 5. Reproducing results from the paper
 
@@ -278,7 +279,7 @@ The results presented in [1] consist of five main parts:
 1. Examples of trained logRASMs (Figure 5 in [1])
 2. Ablation study on the 2D benchmarks (Table 1 in [1])
 3. Ablation study on the 3D and 4D benchmarks (Table 2 in [2])
-4. Experiments on the 2D benchmarks with policies pre-trained with other RL algorithms in Stable Baselines3 (Table 3 in [1])
+4. Experiments on the 2D benchmarks with policies pre-trained with other RL algorithms in Stable-Baselines3 (Table 3 in [1])
 5. Comparison of our Lipschitz constants to LipBaB (Table 5 in the appendix of [1])
 
 Since reproducing all these results takes multiple weeks, we also provide an option to reproduce the results partially.
@@ -304,7 +305,7 @@ host machine where you started the Docker container from):
 - **Ablation study (3D and 4D benchmarks):** Partial version of Table 2 in [1], exported to `output/hard-benchmarks_table_<datetime>.tex` and `.csv`:
 
   <img src="./img/table-partial-hard.png" width="500px">
-- **Policies pretrained with Stable Baselines3:** Partial version of Table 3 in [1], exported to `output/SB3-benchmarks_table_<datetime>.tex` and `.csv`:
+- **Policies pretrained with Stable-Baselines3:** Partial version of Table 3 in [1], exported to `output/SB3-benchmarks_table_<datetime>.tex` and `.csv`:
   <img src="./img/table-partial-sb3.png" width="500px">
 
 ## Reproducing the results from [1] completely
@@ -325,7 +326,7 @@ bash experiments/run_hard.sh > output/full_hard.out;
 bash experiments/run_stablebaselines.sh > output/full_SB3.out;
 ```
 
-For the Stable Baselines3 experiments, we provide input policies trained with TRPO, TQC, SAC, and A2C as pretrained checkpoints in this repository (in the `ckpt_pretrain_sb3/`
+For the Stable-Baselines3 experiments, we provide input policies trained with TRPO, TQC, SAC, and A2C as pretrained checkpoints in this repository (in the `ckpt_pretrain_sb3/`
 folder). While not necessary for reproducing the results, you can retrain these policies by running:
 
 ```

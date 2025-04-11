@@ -68,7 +68,7 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
             MID = (set.high + set.low)[plot_dimensions] / 2
             if labels:
                 if latex:
-                    text = '$\mathcal{X}_T$'
+                    text = r'$\mathcal{X}_T$'
                 else:
                     text = 'X_T'
                 ax.annotate(text, MID, color='green', fontsize=lsize, ha='center', va='center')
@@ -79,7 +79,7 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
         MID = (env.target_space.high + env.target_space.low)[plot_dimensions] / 2
         if labels:
             if latex:
-                text = '$\mathcal{X}_T$'
+                text = r'$\mathcal{X}_T$'
             else:
                 text = 'X_T'
             ax.annotate(text, MID, color='green', fontsize=lsize, ha='center', va='center')
@@ -93,7 +93,7 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
             MID = (set.high + set.low)[plot_dimensions] / 2
             if labels:
                 if latex:
-                    text = '$\mathcal{X}_U$'
+                    text = r'$\mathcal{X}_U$'
                 else:
                     text = 'X_U'
                 ax.annotate(text, MID, color='red', fontsize=lsize, ha='center', va='center')
@@ -104,7 +104,7 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
         MID = (env.unsafe_space.high + env.unsafe_space.low)[plot_dimensions] / 2
         if labels:
             if latex:
-                text = '$\mathcal{X}_U$'
+                text = r'$\mathcal{X}_U$'
             else:
                 text = 'X_U'
             ax.annotate(text, MID, color='red', fontsize=lsize, ha='center', va='center')
@@ -118,7 +118,7 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
             MID = (set.high + set.low)[plot_dimensions] / 2
             if labels:
                 if latex:
-                    text = '$\mathcal{X}_0$'
+                    text = r'$\mathcal{X}_0$'
                 else:
                     text = 'X_0'
                 ax.annotate(text, MID, color='black', fontsize=lsize, ha='center', va='center')
@@ -129,7 +129,7 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
         MID = (env.init_space.high + env.init_space.low)[plot_dimensions] / 2
         if labels:
             if latex:
-                text = '$\mathcal{X}_0$'
+                text = r'$\mathcal{X}_0$'
             else:
                 text = 'X_0'
             ax.annotate(text, MID, color='black', fontsize=lsize, ha='center', va='center')
@@ -542,7 +542,7 @@ def plot_certificate_2D(env, cert_state, folder=False, filename=False, logscale=
 
             if labels:
                 if latex:
-                    text = '$\mathcal{X}_T$'
+                    text = r'$\mathcal{X}_T$'
                 else:
                     text = 'X_T'
                 ax.annotate(text, (UB + LB) / 2, color='green', fontsize=lsize, ha='center', va='center')
@@ -556,7 +556,7 @@ def plot_certificate_2D(env, cert_state, folder=False, filename=False, logscale=
 
         if labels:
             if latex:
-                text = '$\mathcal{X}_T$'
+                text = r'$\mathcal{X}_T$'
             else:
                 text = 'X_T'
             ax.annotate(text, (UB + LB) / 2, color='green', fontsize=lsize, ha='center', va='center')
@@ -568,28 +568,28 @@ def plot_certificate_2D(env, cert_state, folder=False, filename=False, logscale=
                                      env.state_space.high[plot_dim], xycells)
             UB = position_in_heatmap(set.high[plot_dim], env.state_space.low[plot_dim],
                                      env.state_space.high[plot_dim], xycells)
-            ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='yellow'))
+            ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='black'))
 
             if labels:
                 if latex:
-                    text = '$\mathcal{X}_U$'
+                    text = r'$\mathcal{X}_U$'
                 else:
                     text = 'X_U'
-                ax.annotate(text, (UB + LB) / 2, color='yellow', fontsize=lsize, ha='center', va='center')
+                ax.annotate(text, (UB + LB) / 2, color='black', fontsize=lsize, ha='center', va='center')
 
     else:
         LB = position_in_heatmap(env.unsafe_space.low[plot_dim], env.state_space.low[plot_dim],
                                  env.state_space.high[plot_dim], xycells)
         UB = position_in_heatmap(env.unsafe_space.high[plot_dim], env.state_space.low[plot_dim],
                                  env.state_space.high[plot_dim], xycells)
-        ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='yellow'))
+        ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='black'))
 
         if labels:
             if latex:
-                text = '$\mathcal{X}_U$'
+                text = r'$\mathcal{X}_U$'
             else:
                 text = 'X_U'
-            ax.annotate(text, (UB + LB) / 2, color='yellow', fontsize=lsize, ha='center', va='center')
+            ax.annotate(text, (UB + LB) / 2, color='black', fontsize=lsize, ha='center', va='center')
 
     # Plot initial set
     if isinstance(env.init_space, MultiRectangularSet):
@@ -598,28 +598,28 @@ def plot_certificate_2D(env, cert_state, folder=False, filename=False, logscale=
                                      env.state_space.high[plot_dim], xycells)
             UB = position_in_heatmap(set.high[plot_dim], env.state_space.low[plot_dim],
                                      env.state_space.high[plot_dim], xycells)
-            ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='black'))
+            ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='yellow'))
 
             if labels:
                 if latex:
-                    text = '$\mathcal{X}_0$'
+                    text = r'$\mathcal{X}_0$'
                 else:
                     text = 'X_0'
-                ax.annotate(text, (UB + LB) / 2, color='black', fontsize=lsize, ha='center', va='center')
+                ax.annotate(text, (UB + LB) / 2, color='yellow', fontsize=lsize, ha='center', va='center')
 
     else:
         LB = position_in_heatmap(env.init_space.low[plot_dim], env.state_space.low[plot_dim],
                                  env.state_space.high[plot_dim], xycells)
         UB = position_in_heatmap(env.init_space.high[plot_dim], env.state_space.low[plot_dim],
                                  env.state_space.high[plot_dim], xycells)
-        ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='black'))
+        ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='yellow'))
 
         if labels:
             if latex:
-                text = '$\mathcal{X}_0$'
+                text = r'$\mathcal{X}_0$'
             else:
                 text = 'X_0'
-            ax.annotate(text, (UB + LB) / 2, color='black', fontsize=lsize, ha='center', va='center')
+            ax.annotate(text, (UB + LB) / 2, color='yellow', fontsize=lsize, ha='center', va='center')
 
     #####
 

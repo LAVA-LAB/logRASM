@@ -7,7 +7,7 @@ flags_mesh1="--mesh_loss 0.001 --mesh_loss_decrease_per_iter 0.8"
 flags_mesh2="--mesh_loss 0.01 --mesh_loss_decrease_per_iter 0.8"
 
 # Generate figures of selected RASMs
-timeout 2000 python run.py --seed 1 --model ${models[0]} $all_flags $flags_mesh1 --probability_bound 0.999999 --exp_certificate --presentation_plots --no-plot_latex_text;
-timeout 2000 python run.py --seed 1 --model ${models[1]} $all_flags $flags_mesh1 --probability_bound 0.999999 --exp_certificate --presentation_plots --no-plot_latex_text;
-timeout 2000 python run.py --seed 1 --model ${models[2]} $all_flags $flags_mesh1 --probability_bound 0.999999 --exp_certificate --presentation_plots --no-plot_latex_text;
-timeout 2000 python run.py --seed 1 --model ${models[3]} $all_flags $flags_mesh2 --probability_bound 0.999999 --exp_certificate --presentation_plots --no-plot_latex_text;
+timeout 2000 python run.py --seed 1 --model ${models[0]} $all_flags $flags_mesh1 --probability_bound 0.999999 --exp_certificate --no-plot_latex_text;
+timeout 2000 python run.py --seed 1 --model ${models[1]} $all_flags $flags_mesh1 --probability_bound 0.999999 --exp_certificate --no-plot_latex_text;
+timeout 2000 python run.py --seed 1 --model ${models[2]} $all_flags $flags_mesh1 --probability_bound 0.999999 --exp_certificate --no-plot_latex_text;
+timeout 2000 python run.py --seed 1 --model ${models[3]} $all_flags $flags_mesh2 --probability_bound 0.999999 --exp_certificate --no-plot_latex_text;
