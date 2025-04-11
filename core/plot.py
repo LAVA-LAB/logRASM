@@ -568,7 +568,7 @@ def plot_certificate_2D(env, cert_state, folder=False, filename=False, logscale=
                                      env.state_space.high[plot_dim], xycells)
             UB = position_in_heatmap(set.high[plot_dim], env.state_space.low[plot_dim],
                                      env.state_space.high[plot_dim], xycells)
-            ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='black'))
+            ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='yellow'))
 
             if labels:
                 if latex:
@@ -582,7 +582,7 @@ def plot_certificate_2D(env, cert_state, folder=False, filename=False, logscale=
                                  env.state_space.high[plot_dim], xycells)
         UB = position_in_heatmap(env.unsafe_space.high[plot_dim], env.state_space.low[plot_dim],
                                  env.state_space.high[plot_dim], xycells)
-        ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='black'))
+        ax.add_patch(Rectangle(LB, (UB - LB)[0], (UB - LB)[1], fill=False, edgecolor='yellow'))
 
         if labels:
             if latex:

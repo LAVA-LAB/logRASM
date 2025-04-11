@@ -85,27 +85,24 @@ If you want to run with GPU acceleration, you can continue with step 2a; otherwi
 
 ### Step 2a: Run with GPU acceleration
 
-To run with GPU acceleration, you need to set up Docker so that it can access the GPU on the host machine. To do this, follow
-the [NVIDIA Container Toolkit installation instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
-For example, on Ubuntu or Debian, you should first configure the production repository:
+To run with GPU acceleration, you need to install:
+
+1. The NVIDIA GPU driver and CUDA toolkit (see the introduction of the ReadMe for the versions we have tested on)
+2. The NVIDIA Container Toolkit
+
+We assume you already have the NVIDIA GPU driver and CUDA toolkit installed. The CUDA toolkit can be installed
+from [the NVIDIA website](https://developer.nvidia.com/cuda-downloads).
+
+Instructions for installing the NVIDIA container toolkit [can be found here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+For example, on Ubuntu or Debian, you can install the NVIDIA Container Toolkit as follows:
 
 ```
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
   && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
     sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-```
-
-Then, install the NVIDIA Container Toolkit:
-
-```
 sudo apt-get update
 sudo apt-get install -y nvidia-container-toolkit
-```
-
-Finally, configure the container runtime and restart Docker:
-
-```
 sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 ```
@@ -270,6 +267,9 @@ python train_SB3.py --model LinearSystem --layout 0 --algorithm TRPO --total_ste
 ```
 
 The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C (see [Section 5](#4.-reproducing-results-from-the-paper) for details).
+
+> **_NOTE:_**
+>
 
 # 5. Reproducing results from the paper
 

@@ -45,7 +45,7 @@ def parse_arguments(linfty, datetime, cwd):
                         help="If True, plots are generated throughout the CEGIS iterations (increases runtime)")
     parser.add_argument('--presentation_plots', action=argparse.BooleanOptionalAction, default=False,
                         help="If True, labels and titles are omitted from plots (better for generating GIFs for, e.g., presentations)")
-    parser.add_argument('--plot_latex_text', action=argparse.BooleanOptionalAction, default=True,
+    parser.add_argument('--plot_latex_text', action=argparse.BooleanOptionalAction, default=False,
                         help="If True, use latex for labels in plots; If False, use plain text (e.g., Docker container does not have latex installed)")
 
     ### POLICY INITIALIZATION ARGUMENTS

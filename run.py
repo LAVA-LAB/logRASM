@@ -41,9 +41,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import orbax.checkpoint
 from flax.training import orbax_utils
-from jax.lib import xla_bridge
-
-# jax.config.update("jax_debug_nans", True) # For debugging NaNs
+from jax.extend.backend import get_backend
 
 # Create output object and set file to export to
 if args.load_ckpt != '':
@@ -60,7 +58,7 @@ if not args.silent:
     print('\nRun using arguments:')
     for key, val in vars(args).items():
         print(' - `' + str(key) + '`: ' + str(val))
-    print(f'\nRunning JAX on device: {xla_bridge.get_backend().platform}')
+    print(f'\nRunning JAX on device: {get_backend().platform}')
     if args.high_precision:
         test = jnp.array([3.5096874987, 6.30985987], dtype=jnp.float64)
         if test.dtype == jnp.float64:
