@@ -293,7 +293,7 @@ following parameters:
 - `--verify_batch_size`, which is 30000 by default and can be reduced to, e.g., 5000 (or even lower)
 - `--forward_pass_batch_size`, which is 1 million by default and can be reduce to, e.g., 100k
 
-We recommend first lowering the `verify_batch_size`, and only change `forward_pass_batch_size` if that does not resolve the error.
+We recommend first lowering the `verify_batch_size`, and only changing `forward_pass_batch_size` if that does not resolve the error.
 
 ## Reproducing the results from [1] partially
 
@@ -312,12 +312,12 @@ host machine where you started the Docker container from):
 
 - **Ablation study (2D benchmarks):** Partial version of Table 1 in [1], exported to `output/main-benchmarks_table_<datetime>.tex` and `.csv`:
 
-  <img src="./img/table-partial-main.png" width="500px">
+  <img src="./img/table-partial-main.png" width="400px">
 - **Ablation study (3D and 4D benchmarks):** Partial version of Table 2 in [1], exported to `output/hard-benchmarks_table_<datetime>.tex` and `.csv`:
 
-  <img src="./img/table-partial-hard.png" width="500px">
+  <img src="./img/table-partial-hard.png" width="400px">
 - **Policies pretrained with Stable-Baselines3:** Partial version of Table 3 in [1], exported to `output/SB3-benchmarks_table_<datetime>.tex` and `.csv`:
-  <img src="./img/table-partial-sb3.png" width="500px">
+  <img src="./img/table-partial-sb3.png" width="400px">
 
 ## Reproducing the results from [1] completely
 
