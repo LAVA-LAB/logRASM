@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 
+import numpy as np
+
 from core.parse_args import parse_arguments, set_mesh_loss
 
 # Define argument object
@@ -38,7 +40,6 @@ import flax.linen as nn
 
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-import numpy as np
 import orbax.checkpoint
 from flax.training import orbax_utils
 from jax.extend.backend import get_backend
@@ -146,6 +147,10 @@ LOGG.append_time(key='pretrain_policy', value=LOGG.get_timer_value())
 
 # %%
 
+# Set random seeds
+key = jax.random.PRNGKey(args.seed)
+np.random.seed(args.seed)
+
 cegis_start_time = time.time()
 
 # Create gym environment (jax/flax version)
@@ -211,7 +216,6 @@ LOGG.append_time(key='initialize_CEGIS', value=LOGG.get_timer_value())
 # %%
 
 # Main Learner-Verifier loop
-key = jax.random.PRNGKey(args.seed)
 update_policy_after_iteration = 3
 LOGG.add_info(key='status', value='none')
 

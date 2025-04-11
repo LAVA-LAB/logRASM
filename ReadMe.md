@@ -180,13 +180,13 @@ Thus, we recommend installing via Conda.
 To install JAX with acceleration, run
 
 ```
-conda install jaxlib=*=*cuda* jax cuda-nvcc -c conda-forge -c nvidia
+pip install --upgrade "jax[cuda12]"
 ```
 
 To install JAX without GPU acceleration, run
 
 ```
-pip install jax==0.4.26
+pip install --upgrade jax
 ```
 
 Then, install the remaining requirements:
@@ -284,6 +284,17 @@ The results presented in [1] consist of five main parts:
 
 Since reproducing all these results takes multiple weeks, we also provide an option to reproduce the results partially.
 
+## Resolving out-of-memory errors
+
+The provided experiments scripts contain the same parameters as used in the experiments of [1], which are run on server running Debian, with an AMD Ryzen Threadripper PRO 5965WX
+CPU, 512 GB of RAM, and an NVIDIA GeForce RTX 4090 GPU. When running on a machine with less resources, you might get out-of-memory errors. To resolve these issues, try lowering the
+following parameters:
+
+- `--verify_batch_size`, which is 30000 by default and can be reduced to, e.g., 5000 (or even lower)
+- `--forward_pass_batch_size`, which is 1 million by default and can be reduce to, e.g., 100k
+
+We recommend first lowering the `verify_batch_size`, and only change `forward_pass_batch_size` if that does not resolve the error.
+
 ## Reproducing the results from [1] partially
 
 To reproduce the experiments partially, run the following command in the main directory of the artifact (expected run time with GPU acceleration: about 8 hours):
@@ -297,7 +308,7 @@ host machine where you started the Docker container from):
 
 - **Trained logRASM figures**: Plot the logRASMs for the four 2D benchmarks, exported to `output/figures/` and the respective subfoldere therein:
 
-> To be added!
+  <img src="./img/linsys.png" width="250px"><img src="./img/linsys1.png" width="250px"><img src="./img/pendulum.png" width="250px"><img src="./img/collisionavoid.png" width="250px">
 
 - **Ablation study (2D benchmarks):** Partial version of Table 1 in [1], exported to `output/main-benchmarks_table_<datetime>.tex` and `.csv`:
 
@@ -338,14 +349,13 @@ presented in Table 5 in the appendix of [1], and can be reproduced by running (f
 
 ```
 bash experiments/run_LipBaB.sh > output/experiments_LipBaB.out
-python3 LipBaB_interpret_results.py < output/experiments_LipBaB.out
+python3 LipBaB_interpret_results.py < output/experiments_LipBaB.out > output/LipBaB_table.tex
 ```
 
-This script runs LipBaB on several checkpoints of learned RASMs (together with the corresponding policy), which we
-provide as pretrained checkpoints in this repository.
-The Python script `LipBaB_interpret_results.py` then takes the terminal output to produce Table 3 as presented in the
-appendix of [1]. For reproducing these results using a different set of checkpoints than the checkpoints that we provide in `ckpt_lipbab`, the script
-`bash collect_checkpoints_LipBaB.sh` can be
+This script runs LipBaB on several checkpoints of learned RASMs (together with the corresponding policy), which we provide as pretrained checkpoints in this repository.
+The Python script `LipBaB_interpret_results.py` then takes the terminal output to produce Table 3 as presented in the appendix of [1], and exports this table to
+`output/LipBaB_table.tex`.
+For reproducing these results using a different set of checkpoints than the checkpoints that we provide in `ckpt_lipbab`, the script `bash collect_checkpoints_LipBaB.sh` can be
 called on the `main` folder produced in the ablation study to collect and rename the specific checkpoints used in the LipBaB comparison.
 
 > To be updated from here onwards...
