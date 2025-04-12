@@ -21,8 +21,9 @@ Contents of this ReadMe:
 3. [Installing from source](#3-installing-from-source)
 4. [Running for a single benchmark (smoke test)](#4-running-for-a-single-benchmark-smoke-test)
 5. [Reproducing results from the paper](#5-reproducing-results-from-the-paper)
-6. [Overview of input arguments](#6-overview-of-input-arguments)
-7. [Rebuilding the Docker container](#7-rebuilding-the-docker-container)
+6. [Training policies with Stable-Baselines](#6-training-policies-with-stable-baselines)
+7. [Overview of input arguments](#7-overview-of-input-arguments)
+8. [Rebuilding the Docker container](#8-rebuilding-the-docker-container)
 
 ### A note on CUDA / GPU acceleration
 
@@ -216,7 +217,7 @@ The following example can be run to verify if the code runs correctly. If the co
 overview of the arguments):
 
 ```
-python run.py --model LinearSystem --probability_bound 0.9999 --pretrain_method PPO_JAX --pretrain_total_steps 100000 --mesh_loss 0.001 --exp_certificate;
+python run.py --model LinearSystem --probability_bound 0.9999 --pretrain_method PPO_JAX --pretrain_total_steps 100000 --mesh_loss 0.001 --exp_certificate
 ```
 
 This example first pretrains a policy on the `linear-sys` benchmark for 100k steps using PPO and exports this policy as a checkpoint to the folder `ckpt/`. Then, this policy is
@@ -255,23 +256,6 @@ python validate_certificate.py --check_folder 'output/subfolder-with-multiple-ch
 
 Several other arguments can be passed; see `validate_certificate.py` for the full overview.
 
-## Training policies with Stable-Baselines
-
-By default, `run.py` trains policies with PPO (implemented in JAX).
-For some experiments, we instead train policies with other RL algorithms implemented in [Stable-Baselines3](https://stable-baselines3.readthedocs.io/en/master/).
-Since these implementations are not optimized for our code (and thus slow to run), we provide a script to externally pretrain policies using Stable-Baselines3.
-This script is called `train_SB3.py` and can, for example, be used as follows:
-
-```
-python train_SB3.py --model LinearSystem --layout 0 --algorithm TRPO --total_steps 100000 --seed 1 --num_envs 10 --neurons_per_layer 128 --hidden_layers 3
-```
-
-The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C (see [Section 5](#4.-reproducing-results-from-the-paper) for details).
-
-> **_NOTE:_** We have experience issues running Stable-Baselines3 within the Docker container with GPU acceleration. run the `train_SB3.py` script above, please run the Docker
-> container without GPU acceleration or build the code from source. Also, all Stable-Baselines3 policies needed to reproduce the results from [1] are already provided with the
-> code.
-
 # 5. Reproducing results from the paper
 
 The results presented in [1] consist of five main parts:
@@ -297,10 +281,10 @@ We recommend first lowering the `verify_batch_size`, and only changing `forward_
 
 ## Reproducing the results from [1] partially
 
-To reproduce the experiments partially, run the following command in the main directory of the artifact (expected run time with GPU acceleration: about 8 hours):
+To reproduce the experiments partially, run the following command in the main directory of the artifact (expected run time with GPU acceleration: about 8-9 hours):
 
 ```
-bash experiments/run_partial_benchmarks.sh > output/partial_benchmarks.out;
+bash experiments/run_partial_benchmarks.sh > output/partial_benchmarks.out
 ```
 
 Running this script generates the following outputs in the `output/` folder (if you followed the Docker instructions above, these results should also appear in the folder on the
@@ -317,6 +301,7 @@ host machine where you started the Docker container from):
 
   <img src="./img/table-partial-hard.png" width="400px">
 - **Policies pretrained with Stable-Baselines3:** Partial version of Table 3 in [1], exported to `output/SB3-benchmarks_table_<datetime>.tex` and `.csv`:
+
   <img src="./img/table-partial-sb3.png" width="400px">
 
 ## Reproducing the results from [1] completely
@@ -326,15 +311,15 @@ To reproduce the experiments completely, run all of the following commands. Note
 First, reproduce the logRASMs presented in Figure 5 in [1] by running:
 
 ```
-bash experiments/run_figures.sh > output/full_figures.out;
+bash experiments/run_figures.sh > output/full_figures.out
 ```
 
 Second, the following command reproduces Tables 1 and 2 in [1] and exports these to the respective `.tex` and `.csv` files in the `output/` folder:
 
 ```
-bash experiments/run_main.sh > output/full_main.out;
-bash experiments/run_hard.sh > output/full_hard.out;
-bash experiments/run_stablebaselines.sh > output/full_SB3.out;
+bash experiments/run_main.sh > output/full_main.out
+bash experiments/run_hard.sh > output/full_hard.out
+bash experiments/run_stablebaselines.sh > output/full_SB3.out
 ```
 
 For the Stable-Baselines3 experiments, we provide input policies trained with TRPO, TQC, SAC, and A2C as pretrained checkpoints in this repository (in the `ckpt_pretrain_sb3/`
@@ -360,7 +345,24 @@ called on the `main` folder produced in the ablation study to collect and rename
 
 > To be updated from here onwards...
 
-# 6. Overview of input arguments
+# 6. Training policies with Stable-Baselines
+
+By default, `run.py` trains policies with PPO (implemented in JAX).
+For some experiments, we instead train policies with other RL algorithms implemented in [Stable-Baselines3](https://stable-baselines3.readthedocs.io/en/master/).
+Since these implementations are not optimized for our code (and thus slow to run), we provide a script to externally pretrain policies using Stable-Baselines3.
+This script is called `train_SB3.py` and can, for example, be used as follows:
+
+```
+python train_SB3.py --model LinearSystem --layout 0 --algorithm TRPO --total_steps 100000 --seed 1 --num_envs 10 --neurons_per_layer 128 --hidden_layers 3
+```
+
+The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C (see [Section 5](#4.-reproducing-results-from-the-paper) for details).
+
+> **_NOTE:_** We have experience issues running Stable-Baselines3 within the Docker container with GPU acceleration. run the `train_SB3.py` script above, please run the Docker
+> container without GPU acceleration or build the code from source. Also, all Stable-Baselines3 policies needed to reproduce the results from [1] are already provided with the
+> code.
+
+# 7. Overview of input arguments
 
 We provide an overview of the most important input arguments to the `run.py` script.
 For an overview of *all arguments*, we refer to `core/parse_args.py` (note that some of these arguments are never
@@ -421,7 +423,7 @@ All arguments are given as `--<argument name> <value>` or (in the case of boolea
 | counterx_refresh_fraction | 0.50      | Fraction of the counter example buffer to renew after each iteration                                                    |
 | counterx_fraction         | 0.25      | Fraction of counter examples, compared to the total train data set.                                                     |
 
-# 7. Rebuilding the Docker container
+# 8. Rebuilding the Docker container
 
 The docker container (for AMD and X86 architectures) can be rebuilt from the source code by executing the following command in the root directory of the artifact (here, 1.0
 indicates the version):
