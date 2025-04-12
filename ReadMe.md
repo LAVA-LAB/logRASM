@@ -302,6 +302,9 @@ host machine where you started the Docker container from):
 
   <img src="./img/table-partial-sb3.png" width="400px">
 
+> **_NOTE:_** We have experienced that the code runs slightly slower in the Docker container than when built from source. Thus, even though the results above are produced on the
+> same machine as in [1], the resulting runtimes are higher.
+
 ## Reproducing the results from [1] completely
 
 To reproduce the experiments completely, run all of the following commands. Note that the expected total runtime is multiple weeks.
