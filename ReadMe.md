@@ -14,8 +14,6 @@ For more details about the approach, we refer to the paper above.
 
 ### Table of contents
 
-Contents of this ReadMe:
-
 1. [What does this code do?](#1-what-does-this-code-do)
 2. [Run from a Docker container (preferred)](#2-run-from-a-docker-container-preferred)
 3. [Installing from source](#3-installing-from-source)
