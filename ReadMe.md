@@ -25,29 +25,27 @@ For more details about the approach, we refer to the paper above.
 
 ### A note on CUDA / GPU acceleration
 
-This code is written in JAX and can be run on GPU with CUDA. We provide a Docker container with CUDA support enabled (see [step 2](#2-run-from-a-docker-container-preferred) below).
-While we have tested the Docker container on multiple systems (listed below), running JAX code with GPU acceleration within a Docker container can be tricky to set up. If you
-encounter problems, feel free to open an issue on GitHub or send an email (thombadings@gmail.com).
+This code is written in JAX and can be run on GPU with CUDA version 12. We provide a Docker container with CUDA support enabled (see [step 2](#2-run-from-a-docker-container-preferred) below).
+We have tested the Docker container with GPU acceleration through CUDA on the following setups:
 
-The Docker container with GPU support enabled has been tested on:
+1. Linux 6.1.0-23-amd64, running Debian GNU/Linux 12, CUDA version 12.5, NVIDIA driver version 555.42.06
+2. Linux 6.8.0-49-generic, running Ubuntu 22.04.5 LTS, CUDA version 12.4, NVIDIA driver version 550.120
+3. Linux 6.1.0-25-amd64,running Debian GNU/Linux 12, CUDA version 12.2, NVIDIA driver version 535.216.01
 
-1. Linux 6.1.0-23-amd64, running Debian GNU/Linux 12, Cuda version 12.5, NVIDIA driver version 555.42.06.
-2. Linux 6.8.0-49-generic, running Ubuntu 22.04.5 LTS, Cuda version 12.4, NVIDIA driver version 550.120.
+If you encounter problems running with GPU acceleration, feel free to open an issue on GitHub.
 
-> **_NOTE:_** GPU acceleration with JAX is only fully supported via CUDA. The support of JAX for Apple GPUs is only experimental and is not enough to run our code. To reproduce the
-> results form [1] in reasonable time, running our code with GPU acceleration is necessary. More details can be
-> found in the [JAX installation guide](https://docs.jax.dev/en/latest/installation.html).
+> **_NOTE:_** GPU acceleration with JAX is only fully supported via CUDA. The support of JAX for Apple GPUs is only experimental and does not have all functionalities needed to run our code. To reproduce the results form [1] in reasonable time, running our code with GPU acceleration is necessary. More details can be found in the [JAX installation guide](https://docs.jax.dev/en/latest/installation.html).
 
 ### Code Documentation
 
-Documentation of the core functionalities of the code are provided in the [code documentation](Code/neural_stochastic_backup/docs/build/html/index.html).
+Documentation of the core Python functions of the code are provided in the [code documentation](Code/neural_stochastic_backup/docs/build/html/index.html) (generated with Sphinx).
 
 # 1. What does this code do?
 
 While we refer to the paper [1] for details, we briefly explain what our code computes.
 In a nutshell, given
 
-1) a stochastic dynamical system, and
+1) a discrete-time stochastic dynamical system, and
 2) a reach-avoid specification, i.e., a tuple $(X_T, X_U, \rho)$ of a set of target states $X_T$, a set of
    unsafe states $X_U$, and a probability bound $\rho \in (0,1)$,
 
@@ -60,9 +58,9 @@ If a valid RASM is found, our code terminates and returns the RASM as proof that
 # 2. Run from a Docker container (preferred)
 
 The preferred way to run our code is by using the Docker container that we provide.
-Our Docker container is built upon Ubuntu, on top of which we install Miniconda, JAX, and the other Python dependencies (see the Dockerfile in this artifact for details).
+Our Docker container is built upon Ubuntu, on top of which we installed Miniconda, JAX, and the other Python dependencies (see the Dockerfile in this artifact for details).
 
-> **_NOTE:_** On Ubuntu, Docker binds by default to a socket that other users can only access using sudo. Thus, it may be necessary to run Docker commands using sudo.
+> **_NOTE:_** On Ubuntu, Docker binds by default to a socket that other users can only access using sudo. Thus, it may be necessary to run Docker commands using `sudo`.
 > Alternatively, one can follow [this guide on the Docker website](https://docs.docker.com/engine/install/linux-postinstall/) to avoid having to run with sudo.
 
 ### Step 1: Pull or download the Docker container
@@ -82,22 +80,18 @@ docker load -i cav25_lograsm.tar
 Our implementation is written in JAX and can be accelerated by running on an NVIDIA GPU with CUDA.
 If you want to run with GPU acceleration, you can continue with step 2a; otherwise, you can continue with step 2b.
 
-> **_NOTE:_** The Docker container above is built for AMD and X86 architectures. In addition, we also provide an ARM version of the container, which can be pulled from Docker Hub
-> via `thombadings/lograsm:v1-arm` or loaded via `cav25_lograsm-arm.tar`. However, the ARM version of the container is not compatible with CUDA. Therefore, the runtimes with the
-> ARM version are not representative of [1], and we recommend using the AMD / X86 version with GPU acceleration for serious benchmarking.
+> **_NOTE:_** The Docker container above is built for AMD and X86 architectures. In addition, we also provide an ARM version of the container (e.g., for Apple Silicon), which can be pulled from Docker Hub via `thombadings/lograsm:v1-arm` or loaded via `cav25_lograsm-arm.tar`. However, the ARM version of the container is not compatible with CUDA. Therefore, the runtimes with the ARM version are not representative of [1], and we recommend using the AMD / X86 version with GPU acceleration for serious benchmarking.
 
 ### Step 2a: Run with GPU acceleration
 
-To run with GPU acceleration, you need to install:
+To run with GPU acceleration, you need an NVIDIA GPU that support CUDA and install:
 
-1. The NVIDIA GPU driver and CUDA toolkit (see the introduction of the ReadMe for the versions we have tested on)
-2. The NVIDIA Container Toolkit
+1. An NVIDIA driver version compatible with CUDA 12.X (see [this page](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) for compatible driver versions)
+2. The NVIDIA CUDA 12 Toolkit (can be installed from [the NVIDIA website](https://developer.nvidia.com/cuda-downloads))
+3. The NVIDIA Container Toolkit (can be installed using [these instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html))
 
-We assume you already have the NVIDIA GPU driver and CUDA toolkit installed. The CUDA toolkit can be installed
-from [the NVIDIA website](https://developer.nvidia.com/cuda-downloads).
-
-Instructions for installing the NVIDIA container toolkit [can be found here](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
-For example, on Ubuntu or Debian, you can install the NVIDIA Container Toolkit as follows:
+We assume you already have the NVIDIA GPU driver and CUDA 12 toolkit installed.
+Then, on Ubuntu or Debian, you can install the NVIDIA Container Toolkit (which is necessary to let Docker use CUDA) as follows:
 
 ```
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
@@ -116,8 +110,8 @@ To verify the NVIDIA Container Toolkit installation, you can run:
 sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 ```
 
-To use the docker container with GPU acceleration, open a terminal and navigate to the folder that you want to use to synchronize results.
-Then, run the following command:
+To use the Docker container with GPU acceleration, open a terminal and navigate to the folder that you want to use to synchronize results.
+Then, run the following command to start the Docker container:
 
 ```
 docker run --gpus all --runtime=nvidia --mount type=bind,source="$(pwd)",target=/home/lograsm/output -it thombadings/lograsm:v1
@@ -128,7 +122,7 @@ docker run --gpus all --runtime=nvidia --mount type=bind,source="$(pwd)",target=
 All experiments in [1] are run on a GPU, and we do not recommend performing serious benchmarking without GPU acceleration. However, you can run the Docker container without GPU
 acceleration as well (be aware of significantly higher run times).
 
-To use the docker container without GPU acceleration, open a terminal and navigate to the folder that you want to use to synchronize results.
+To use the Docker container without GPU acceleration, open a terminal and navigate to the folder that you want to use to synchronize results.
 Then, run the following command:
 
 ```
@@ -137,62 +131,43 @@ docker run --mount type=bind,source="$(pwd)",target=/home/lograsm/output -it tho
 
 ### Step 3: Running the code
 
-After starting the Docker container with (step 2a) or without (step 2b) GPU acceleration, you will see a prompt inside the docker container. The README in this folder is what you
-are reading. Now, you are ready to run the code for a single model (Section 4) or to replicate the experiments presented in [1] (Section 5).
+After starting the Docker container with (step 2a) or without (step 2b) GPU acceleration, you will see a prompt inside the Docker container. The ReadMe in this folder is what you
+are reading. Now, you are ready to run the code for a single model (Section 4) or to replicate (a subset of) the experiments presented in [1] (Section 5).
 
 # 3. Installing from source
 
 For standard usage, we recommend using the Docker container, but you can also build our tool from source.
-We recommend installing in a conda environment; however, other installation methods are also possible.
+We recommend installing in a conda environment, but other installation methods are also possible.
 Below, we list the steps needed to install via (Mini)conda.
 
-### Step 1: Install Miniconda
+### Step 1: Create a Conda environment
 
-Download Miniconda, e.g., using the following commands ([see here](https://docs.anaconda.com/free/miniconda/) for details):
-
-```
-mkdir -p ~/miniconda3
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
-bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
-rm -rf ~/miniconda3/miniconda.sh
-```
-
-Then, initialize Miniconda using the following commands (and close and re-open the terminal):
-
-```
-~/miniconda3/bin/conda init bash
-~/miniconda3/bin/conda init zsh
-```
-
-### Step 2: Create a new conda environment
-
-The following command creates a new conda environment, specifically with Python version 3.12:
+Assuming that [you have (Mini)conda installed](https://docs.anaconda.com/free/miniconda/), first create a new environment with Python version 3.12:
 
 ```
 conda create -n lograsm python=3.12
 conda activate lograsm
 ```
 
-Next, proceed with either step 3a or 3b (for installing with or without GPU acceleration via CUDA, respectively).
+### Step 2: Install JAX
 
-### Step 3: Installing dependencies
-
-Our implementation uses Jax, which, in turn, can use GPU acceleration via CUDA.
-However, installing CUDA can be tricky in some cases.
-Thus, we recommend installing via Conda.
-To install JAX with acceleration, run
+To install JAX with GPU acceleration, run
 
 ```
 pip install --upgrade "jax[cuda12]"
 ```
 
-To install JAX without GPU acceleration, run
+This will install the necessary CUDA dependencies within the Conda environment
+
+To instead install JAX without GPU acceleration, run
 
 ```
 pip install --upgrade jax
 ```
 
-Then, install the remaining requirements:
+### Step 3: Installing remaining dependencies
+
+Finally, install the remaining Python dependencies:
 
 ```
 pip3 install -r requirements.txt
@@ -201,21 +176,19 @@ pip3 install -r requirements.txt
 # 4. Running for a single benchmark (smoke test)
 
 The main Python file to run the code is `run.py`.
-See [Section 6](#6-overview-of-input-arguments) of this ReadMe for a full overview of the available input arguments.
-A minimal command to train and verify a neural network policy is:
+See [Section 7](#7-overview-of-input-arguments) of this ReadMe for a full overview of the available input arguments.
+A minimal command to train and verify a logRASM is:
 
 ```
-python run.py --model <benchmark> --probability_bound <bound> --pretrain_method <algorithm> --pretrain_total_steps <steps> --mesh_loss <mesh_loss>
+python run.py --model <benchmark> --probability_bound <bound> --pretrain_method <algorithm> --pretrain_total_steps <steps> --mesh_loss <mesh_loss> --exp_certificate
 ```
 
 In this command, `<benchmark>` specifies the benchmark to run, `<bound>` is the probability bound of the reach-avoid specification, `<algorithm>` is the method used to pretrain the
-input neural network policy for the specified number of steps `<steps>`, and `<mesh_loss>` specifies the discretization cell width used in the learner's loss function (see below
-for
-the options).
+input neural network policy for the specified number of steps `<steps>`, and `<mesh_loss>` specifies the discretization cell width used in the learner's loss function (see below for the options).
 
 ## Smoke test
 
-The following example can be run to verify if the code runs correctly. If the code runs on GPU, you should see `Running JAX on device: gpu` in the terminal output (after the
+The following example can be run to verify if the code runs correctly. If the code runs on GPU, you should see `Running JAX on device: gpu` in the terminal output (directly after the
 overview of the arguments):
 
 ```
@@ -225,7 +198,7 @@ python run.py --model LinearSystem --probability_bound 0.9999 --pretrain_method 
 This example first pretrains a policy on the `linear-sys` benchmark for 100k steps using PPO and exports this policy as a checkpoint to the folder `ckpt/`. Then, this policy is
 given as input to the learner-verifier framework, which trains a logRASM that verifies a reach-avoid specification with a probability bound of $\rho = 0.9999$.
 
-- **Expected runtime for this command:** 1 minute on GPU, or 3 minutes on CPU.
+- **Expected runtime for this command:** 1-2 minute on GPU, or 3-5 minutes on CPU.
 - **Expected result:** A folder `output/date=<datetime>_model=LinearSystem_p=0.9999_seed=1_alg=PPO_JAX` is created, in which the following results are stored:
     - `<datetime>_certifcate_Iteration0.pdf` / `.png` shows the learned logRASM:
 
@@ -268,7 +241,7 @@ The results presented in [1] consist of five main parts:
 4. Experiments on the 2D benchmarks with policies pre-trained with other RL algorithms in Stable-Baselines3 (Table 3 in [1])
 5. Comparison of our Lipschitz constants to LipBaB (Table 5 in the appendix of [1])
 
-Since reproducing all these results takes multiple weeks, we also provide an option to reproduce the results partially.
+Since reproducing all results takes multiple weeks, we also provide an option to reproduce the results partially.
 
 ## Resolving out-of-memory errors
 
@@ -276,23 +249,43 @@ The provided experiments scripts contain the same parameters as used in the expe
 CPU, 512 GB of RAM, and an NVIDIA GeForce RTX 4090 GPU. When running on a machine with less resources, you might get out-of-memory errors. To resolve these issues, try lowering the
 following parameters:
 
-- `--verify_batch_size`, which is 30000 by default and can be reduced to, e.g., 5000 (or even lower)
-- `--forward_pass_batch_size`, which is 1 million by default and can be reduce to, e.g., 100k
+- `--verify_batch_size`, which is 30000 by default and might have to be reduced to, e.g., 5000 on a typical laptop (or even lower)
+- `--forward_pass_batch_size`, which is 1 million by default and might have to be reduced to, e.g., 100k on a typical laptop
 
-We recommend first lowering the `verify_batch_size`, and only changing `forward_pass_batch_size` if that does not resolve the error.
+Moreover, when running on a less powerful machine (or on CPU), you may want to increase the timeout to obtain results on more instances.
+
+You can also directly pass these parameters to the experiment script we describe below.
+For example, to run the *tiny benchmark set* (see below) with a verify batch size of 3000, a forward pass batch size of 100k, and all timeouts multiplied by two, run:
+
+```
+bash experiments/run_tiny_benchmarks.sh 3000 100000 2 | tee output/tiny_benchmarks.out
+```
+
+Note that you either have to specify all three arguments or none at all.
+The multiplication of the timeouts is taken compared to the default timeouts (as used in the experiments in [1]).
 
 ## Reproducing the results from [1] partially
 
-To reproduce the experiments partially, run the following command in the main directory of the artifact (expected run time with GPU acceleration: about 8-9 hours):
+We provide two scripts to replicate a subset of the results from [1]:
 
-```
-bash experiments/run_partial_benchmarks.sh > output/partial_benchmarks.out
-```
+1. **Tiny benchmark set** (recommended when running on a laptop or on CPU)
+    ```
+    bash experiments/run_tiny_benchmarks.sh 30000 1000000 6 | tee output/tiny_benchmarks.out
+    ```
+    When encountering out-of-memory errors, try reducing the batch sizes (see [the section above](#resolving-out-of-memory-errors)). The timeout multiplier of 6 helps to obtain more results within the timout when running on CPU.
+    - Expected run time on CPU: XXX hours (tested on an Apple Macbook Pro M4 Pro, 24 GB of RAM) 
+    - Expected run time on GPU: XXX hours (tested on a XXX)
 
-Running this script generates the following outputs in the `output/` folder (if you followed the Docker instructions above, these results should also appear in the folder on the
-host machine where you started the Docker container from):
+2. **Small benchmark set:** (recommended when running on a more powerful machine)
+    ```
+    bash experiments/run_partial_benchmarks.sh | tee output/partial_benchmarks.out
+    ```
+    - Expected run time on GPU: 8 hours (tested on a Debian server, with an AMD Ryzen Threadripper PRO 5965WX CPU, 512~GB of RAM, and an NVIDIA GeForce RTX~4090 GPU)
+    - Expected run time on CPU: Not tested
 
-- **Trained logRASM figures**: Plot the logRASMs for the four 2D benchmarks, exported to `output/figures/` and the respective subfoldere therein:
+Running either of these scripts generates results in the `output/` folder (if you followed the Docker instructions above, these results should also appear in the folder on the host machine where you started the Docker container from). In particular, the partial benchmark set yields the following results (the tiny set only runs the experiments for `linear-sys`):
+
+- **Trained logRASM figures**: Plot the logRASMs for the four 2D benchmarks, exported to `output/figures/` and the respective subfolder therein:
 
   <img src="./img/linsys.png" width="170px"><img src="./img/linsys1.png" width="170px"><img src="./img/pendulum.png" width="170px"><img src="./img/collisionavoid.png" width="170px">
 
@@ -316,30 +309,30 @@ To reproduce the experiments completely, run all of the following commands. Note
 First, reproduce the logRASMs presented in Figure 5 in [1] by running:
 
 ```
-bash experiments/run_figures.sh > output/full_figures.out
+bash experiments/run_figures.sh | tee output/full_figures.out
 ```
 
 Second, the following command reproduces Tables 1 and 2 in [1] and exports these to the respective `.tex` and `.csv` files in the `output/` folder:
 
 ```
-bash experiments/run_main.sh > output/full_main.out
-bash experiments/run_hard.sh > output/full_hard.out
-bash experiments/run_stablebaselines.sh > output/full_SB3.out
+bash experiments/run_main.sh | tee output/full_main.out
+bash experiments/run_hard.sh | tee output/full_hard.out
+bash experiments/run_stablebaselines.sh | tee output/full_SB3.out
 ```
 
 For the Stable-Baselines3 experiments, we provide input policies trained with TRPO, TQC, SAC, and A2C as pretrained checkpoints in this repository (in the `ckpt_pretrain_sb3/`
 folder). While not necessary for reproducing the results, you can retrain these policies by running:
 
 ```
-bash train_SB3_all.sh > output/train_SB3_all.out
+bash train_SB3_all.sh | tee output/train_SB3_all.out
 ```
 
 Finally, the following command runs the comparison to LipBaB, an anytime algorithm for computing upper bounds on Lipschitz constants for neural networks. These experiments are
 presented in Table 5 in the appendix of [1], and can be reproduced by running (files exported to `output/LipBaB_table_<datetime>.tex`):
 
 ```
-bash experiments/run_LipBaB.sh > output/experiments_LipBaB.out
-python3 LipBaB_interpret_results.py < output/experiments_LipBaB.out > output/LipBaB_table.tex
+bash experiments/run_LipBaB.sh | tee output/experiments_LipBaB.out
+python3 LipBaB_interpret_results.py < output/experiments_LipBaB.out | tee output/LipBaB_table.tex
 ```
 
 This script runs LipBaB on several checkpoints of learned RASMs (together with the corresponding policy), which we provide as pretrained checkpoints in this repository.
@@ -359,11 +352,9 @@ This script is called `train_SB3.py` and can, for example, be used as follows:
 python train_SB3.py --model LinearSystem --layout 0 --algorithm TRPO --total_steps 100000 --seed 1 --num_envs 10 --neurons_per_layer 128 --hidden_layers 3
 ```
 
-The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C (see [Section 5](#4.-reproducing-results-from-the-paper) for details).
+The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C.
 
-> **_NOTE:_** We have experience issues running Stable-Baselines3 within the Docker container with GPU acceleration. run the `train_SB3.py` script above, please run the Docker
-> container without GPU acceleration or build the code from source. Also, all Stable-Baselines3 policies needed to reproduce the results from [1] are already provided with the
-> code.
+> **_NOTE:_** We have experienced issues running Stable-Baselines3 within the Docker container with GPU acceleration enabled. When running the `train_SB3.py` script above, please run the Docker container without GPU acceleration or build the code from source. Also, all Stable-Baselines3 policies needed to reproduce the results from [1] are already provided with the code.
 
 # 7. Overview of input arguments
 
@@ -438,7 +429,7 @@ Finally, `--no-exp_certificate --no-weighted --no-cplip` is the baseline verifie
 
 # 8. Rebuilding the Docker container
 
-The docker container (for AMD and X86 architectures) can be rebuilt from the source code by executing the following command in the root directory of the artifact (here, 1.0
+The Docker container (for AMD and X86 architectures) can be rebuilt from the source code by executing the following command in the root directory of the artifact (here, 1.0
 indicates the version):
 
 ```

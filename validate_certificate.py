@@ -28,6 +28,9 @@ import models
 
 
 class Simulator:
+    '''
+    Monte Carlo simulator for the reach-avoid specification.
+    '''
 
     def __init__(self, env, Policy_state, key, init_space, xInits=10000):
 
@@ -174,13 +177,17 @@ class Simulator:
 
 def loss_exp_decrease(env, exp_certificate, V_state, V_params, x, u, noise_key, probability_bound):
     '''
-    Compute loss related to condition 2 (expected decrease).
-    :param V_state:
-    :param V_params:
-    :param x:
-    :param u:
-    :param noise:
-    :return:
+    Compute expected decrease condition
+
+    :param env: Environment.
+    :param exp_certificate: True if logRASM is used.
+    :param V_state: Certificate neural network.
+    :param V_params: Certificate neural network parameters.
+    :param x: State.
+    :param u: Control input.
+    :param noise_key: Key of the random number generator.
+    :param probability_bound: The probability bound of the specification that we aim to certify.
+    :return: Expected decrease
     '''
 
     # For each given noise_key, compute the successor state for the pair (x,u)
@@ -202,6 +209,21 @@ loss_exp_decrease_vmap = jax.vmap(loss_exp_decrease, in_axes=(None, None, None, 
 
 def validate_RASM(checkpoint_path, cell_width=0.01, batch_size=10000, forward_pass_batch_size=1_000_000,
                   expected_decrease_samples=100, seed=1, num_traces=1000, plot_RASM=False, plot_latex_text=True, validate_conditions=True):
+    '''
+    Validate the given (log)RASM by discretizing the state space and computing the expected decrease condition empirically.
+
+    :param checkpoint_path: Path to load checkpoint from.
+    :param cell_width: Discretization cell width.
+    :param batch_size: Batch size to use for computing the expected decrease condition.
+    :param forward_pass_batch_size: Batch size to use for forward passes.
+    :param expected_decrease_samples: Number of samples to use for computing the expected decrease condition in each grid point.
+    :param seed: Random seed.
+    :param num_traces: Number of Monte Carlo simulations to run.
+    :param plot_RASM: If True, plot the (log)RASM.
+    :param plot_latex_text: If True, use LaTeX for plotting.
+    :param validate_conditions: If True, validate the certificate conditions empirically.
+    '''
+
     print(f'- Validate checkpoint in folder "{checkpoint_path}"')
 
     test = jnp.array([3.5096874987, 6.30985987], dtype=jnp.float64)
@@ -420,6 +442,9 @@ def validate_all(args, final_ckpt_name):
 # %%
 
 if __name__ == "__main__":
+    '''
+    Empirically validate learned (log)RASMs for all checkpoints in the given folder, or for a single specified checkpoint.
+    '''
 
     parser = argparse.ArgumentParser(prefix_chars='--')
 

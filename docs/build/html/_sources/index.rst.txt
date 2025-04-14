@@ -3,7 +3,7 @@ Documentation for the logRASM artifact
 
 This repository contains the supplementary code for the paper:
 
-*`Policy Verification in Stochastic Dynamical Systems Using Logarithmic Neural Certificates`<https://doi.org/10.48550/arXiv.2406.00826> by Thom Badings, Wietze Koops, Sebastian
+*`Policy Verification in Stochastic Dynamical Systems Using Logarithmic Neural Certificates<https://doi.org/10.48550/arXiv.2406.00826>`_ by Thom Badings, Wietze Koops, Sebastian
 Junges, and Nils Jansen (CAV 2025)*
 
 This paper proposes techniques that make the verification of neural network policies in stochastic dynamical systems more scalable.
