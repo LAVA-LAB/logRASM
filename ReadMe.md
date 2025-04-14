@@ -370,35 +370,36 @@ The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C (see [Sect
 # 7. Overview of input arguments
 
 We provide an overview of the most important input arguments to the `run.py` script.
-For an overview of *all arguments*, we refer to `core/parse_args.py` (note that some of these arguments are never
-changed from their default values in our experiments).
+For an overview of *all arguments*, please run `python run.py --help` or see `core/parse_args.py`.
+Note that some arguments are never changed from their default values in our experiments.
 
 All arguments are given as `--<argument name> <value>` or (in the case of boolean values) as `--<argument name>`.
 
 ## General arguments
 
-| Arguments            | Default   | Help                                                                               |
-|----------------------|-----------|------------------------------------------------------------------------------------|
-| model                | n/a       | Gymnasium environment ID                                                           |
-| layout               | 0         | Select a particular layout for the benchmark model (if this option exists)         |
-| probability_bound    | 0.9       | Bound on the reach-avoid probability to verify                                     |
-| seed                 | 1         | Random seed                                                                        |
-| validate             | FALSE     | If True, automatically perform validation once certifcate was successfully learned |
-| load_ckpt            | n/a       | If given, a PPO checkpoint is loaded from this file                                |
-| pretrain_method      | PPO_JAX   | Method to pretrain (initialize) the policy                                         |
-| pretrain_total_steps | 1_000_000 | Total number of timesteps to do with PPO (for policy initialization                |
-| logger_prefix        | n/a       | Prefix to logger export file                                                       |
-| silent               | FALSE     | Only show crucial output in terminal                                               |
-| plot_intermediate    | FALSE     | If True, plots are generated throughout the CEGIS iterations (increases runtime)   |
+| Arguments            | Default   | Help                                                                                                    |
+|----------------------|-----------|---------------------------------------------------------------------------------------------------------|
+| model                | n/a       | Gymnasium environment ID                                                                                |
+| layout               | 0         | Select a particular layout for the benchmark model (if this option exists)                              |
+| probability_bound    | 0.9       | Bound on the reach-avoid probability to verify                                                          |
+| seed                 | 1         | Random seed                                                                                             |
+| logger_prefix        | n/a       | Prefix to logger export file                                                                            |
+| silent               | FALSE     | Only show crucial output in terminal                                                                    |
+| validate             | FALSE     | If True, automatically perform validation once (log)RASM was successfully learned                       |
+| plot_intermediate    | FALSE     | If True, plots are generated throughout the CEGIS iterations (increases runtime)                        |
+| load_ckpt            | n/a       | If given, a PPO checkpoint is loaded from this file                                                     |
+| pretrain_method      | PPO_JAX   | Method to pretrain (initialize) the policy. If different from PPO_JAX, it tries to use StableBaselines3 |
+| pretrain_total_steps | 1_000_000 | Total number of timesteps to do with PPO (for policy initialization                                     |
 
 ## Enabling/disabling contributions (as for the ablation)
 
+Adding `--exp_certificate --weighted --cplip` enables both of our contributions (as used in the experiments in [1]). Similarly, `--exp_certificate --no-weighted --no-cplip` corresponds to using logRASMs but not our Lipschitz contributions, and `--no-exp_certificate --weighted --cplip` to using our Lipschitz contributions but with standard RASMs. Finally, `--no-exp_certificate --no-weighted --no-cplip` is the baseline verifier.
+
 | Arguments             | Default | Help                                                                                                         |
 |-----------------------|---------|--------------------------------------------------------------------------------------------------------------|
-| local_refinement      | TRUE    | If True, local grid refinements are performed                                                                |
+| exp_certificate       | FALSE   | If True, train a logRASM (i.e., exponential certificate). If False, use a standard RASM                      |
 | weighted              | TRUE    | If True, use weighted norms to compute Lipschitz constants                                                   |
 | cplip                 | TRUE    | If True, use CPLip method to compute Lipschitz constants                                                     |
-| improved_softplus_lip | TRUE    | If True, use improved (local) Lipschitz constants for softplus in V (if False, global constant of 1 is used) |
 
 ## Learner arguments
 
@@ -406,12 +407,12 @@ All arguments are given as `--<argument name> <value>` or (in the case of boolea
 |-------------------------------|----------|---------------------------------------------------------------------------|
 | Policy_learning_rate          | 5,00E-05 | Learning rate for changing the policy in the CEGIS loop                   |
 | V_learning_rate               | 5,00E-04 | Learning rate for changing the certificate in the CEGIS loop              |
-| cegis_iterations              | 1000     | Number of CEGIS iteration to run                                          |
 | epochs                        | 25       | Number of epochs to run in each iteration                                 |
 | num_samples_per_epoch         | 90000    | Total number of samples to train over in each epoch                       |
 | num_counterexamples_in_buffer | 30000    | Total number of samples to train over in each epoch                       |
 | batch_size                    | 4096     | Batch size used by the learner in each epoch                              |
 | expDecr_multiplier            | 1        | Multiply the weighted counterexample expected decrease loss by this value |
+| eps_decrease                  | 0        | Epsilon to the expected decrease loss function                            |
 
 ## Verifier arguments
 
@@ -419,8 +420,8 @@ All arguments are given as `--<argument name> <value>` or (in the case of boolea
 |---------------------------|-----------|-------------------------------------------------------------------------------------------------------------------------|
 | mesh_loss                 | 0.001     | Mesh size used in the loss function                                                                                     |
 | mesh_verify_grid_init     | 0.01      | Initial mesh size for verifying grid. Mesh is defined such that \|x-y\|_1 <= tau for any x in X and discretized point y |
-| mesh_verify_grid_min      | 0.01      | Minimum mesh size for verifying grid                                                                                    |
-| mesh_refine_min           | 1,00E-09  | Lowest allowed verification grid mesh size in the final verification                                                    |
+| mesh_verify_grid_min      | 0.01      | Minimum mesh size for verifying grid (before refinements within that iteration)                                         |
+| mesh_refine_min           | 1.00E-09  | Lowest allowed verification grid mesh size in the final verification                                                    |
 | max_refine_factor         | 10        | Maximum value to split each grid point into (per dimension), during the (local) refinement                              |
 | verify_batch_size         | 30000     | Number of states for which the verifier checks exp. decrease condition in the same batch.                               |
 | forward_pass_batch_size   | 1_000_000 | Batch size for performing forward passes on the neural network (reduce if this gives memory issues).                    |
