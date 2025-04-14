@@ -437,8 +437,7 @@ indicates the version):
 docker build --platform=linux/amd64 -f Dockerfile --tag thombadings/lograsm:v1 .
 ```
 
-Similarly, the ARM version can be rebuilt by running (note, however, that the ARM version is not compatible with CUDA and thus does not allow to run our code using GPU
-acceleration):
+Similarly, the ARM version can be rebuilt by running
 
 ```
 docker build --platform=linux/arm64 -f Dockerfile-arm --tag thombadings/lograsm:v1-arm .
