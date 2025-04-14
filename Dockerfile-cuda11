@@ -1,5 +1,5 @@
 # Build with the command:
-# docker build --platform=linux/amd64 -f Dockerfile --tag thombadings/lograsm:v1 .
+# docker build --platform=linux/amd64 -f Dockerfile-cuda11 --tag thombadings/lograsm:v1-cuda11 .
 
 FROM ubuntu:latest
 WORKDIR /home
@@ -20,7 +20,7 @@ RUN mkdir -p miniconda3 \
 RUN /home/miniconda3/bin/conda install -y ipython
 
 # JAX
-RUN /home/miniconda3/bin/pip install --upgrade "jax[cuda12]"
+RUN /home/miniconda3/bin/pip install --upgrade "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
 # Build artifact dependencies
 #############
@@ -29,8 +29,8 @@ WORKDIR /home/lograsm
 
 # Obtain requirements and install them
 COPY requirements.txt requirements.txt
-RUN /home/miniconda3/bin/pip install --upgrade pip
-RUN /home/miniconda3/bin/pip install --no-cache-dir -r requirements.txt
+# RUN /home/miniconda3/bin/pip install --upgrade pip
+# RUN /home/miniconda3/bin/pip install --no-cache-dir -r requirements.txt
 
 # Copy all files
 WORKDIR /home/lograsm

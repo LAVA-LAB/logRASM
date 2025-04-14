@@ -1,3 +1,12 @@
+'''
+This is the main Python file for running the code.
+The file can be run from the terminal as
+
+```Python run.py --model <model-name> ...```
+
+For more details, please see the ReadMe file. For all available arguments, please see the function :func:`core.parse_args.parse_arguments`.
+'''
+
 import os
 from datetime import datetime
 

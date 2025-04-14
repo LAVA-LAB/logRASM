@@ -38,14 +38,18 @@ The Docker container with GPU support enabled has been tested on:
 > results form [1] in reasonable time, running our code with GPU acceleration is necessary. More details can be
 > found in the [JAX installation guide](https://docs.jax.dev/en/latest/installation.html).
 
+### Code Documentation
+
+Documentation of the core functionalities of the code are provided in the [code documentation](Code/neural_stochastic_backup/docs/build/html/index.html).
+
 # 1. What does this code do?
 
 While we refer to the paper [1] for details, we briefly explain what our code computes.
 In a nutshell, given
 
 1) a stochastic dynamical system, and
-2) a reach-avoid specification, i.e., a tuple $(X_T, X_U, \rho)$ of a set of target states $X_T \subset X$, a set of
-   unsafe states $X_U \subset X$, and a probability bound $\rho \in (0,1)$,
+2) a reach-avoid specification, i.e., a tuple $(X_T, X_U, \rho)$ of a set of target states $X_T$, a set of
+   unsafe states $X_U$, and a probability bound $\rho \in (0,1)$,
 
 the code tries to learn a (neural network) policy that, when deployed on this system, satisfies the reach-avoid specification.
 This is done by learning a formal certificate, called a logarithmic reach-avoid supermartingale (logRASM), which is represented as a neural network.
