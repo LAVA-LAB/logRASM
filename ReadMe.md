@@ -294,7 +294,7 @@ host machine where you started the Docker container from):
 
 - **Trained logRASM figures**: Plot the logRASMs for the four 2D benchmarks, exported to `output/figures/` and the respective subfoldere therein:
 
-  <img src="./img/linsys.png" height="155px"><img src="./img/linsys1.png" height="155px"><img src="./img/pendulum.png" height="155px"><img src="./img/collisionavoid.png" height="155px">
+  <img src="./img/linsys.png" width="170px"><img src="./img/linsys1.png" width="170px"><img src="./img/pendulum.png" width="170px"><img src="./img/collisionavoid.png" width="170px">
 
 - **Ablation study (2D benchmarks):** Partial version of Table 1 in [1], exported to `output/main-benchmarks_table_<datetime>.tex` and `.csv`:
 
