@@ -427,9 +427,6 @@ for i in range(args.cegis_iterations):
             print(f'- Init state violations: {int(np.sum(counterx_buffer.data[:, -3] > 0))}')
             print(f'- Unsafe state violations: {int(np.sum(counterx_buffer.data[:, -2] > 0))}')
 
-        # Uniformly refine verification grid to smaller mesh
-        args.mesh_verify_grid_init = np.maximum(0.75 * args.mesh_verify_grid_init, args.mesh_verify_grid_min)
-
     LOGG.append_time(key=f'iter{i}_process_counterexamples', value=LOGG.get_timer_value())
 
     plt.close('all')

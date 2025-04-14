@@ -348,8 +348,6 @@ The Python script `LipBaB_interpret_results.py` then takes the terminal output t
 For reproducing these results using a different set of checkpoints than the checkpoints that we provide in `ckpt_lipbab`, the script `bash collect_checkpoints_LipBaB.sh` can be
 called on the `main` folder produced in the ablation study to collect and rename the specific checkpoints used in the LipBaB comparison.
 
-> To be updated from here onwards...
-
 # 6. Training policies with Stable-Baselines
 
 By default, `run.py` trains policies with PPO (implemented in JAX).
@@ -383,51 +381,60 @@ All arguments are given as `--<argument name> <value>` or (in the case of boolea
 | layout               | 0         | Select a particular layout for the benchmark model (if this option exists)                              |
 | probability_bound    | 0.9       | Bound on the reach-avoid probability to verify                                                          |
 | seed                 | 1         | Random seed                                                                                             |
-| logger_prefix        | n/a       | Prefix to logger export file                                                                            |
+| logger_prefix        | n/a       | Prefix to  export file                                                                                  |
 | silent               | FALSE     | Only show crucial output in terminal                                                                    |
 | validate             | FALSE     | If True, automatically perform validation once (log)RASM was successfully learned                       |
 | plot_intermediate    | FALSE     | If True, plots are generated throughout the CEGIS iterations (increases runtime)                        |
-| load_ckpt            | n/a       | If given, a PPO checkpoint is loaded from this file                                                     |
+| load_ckpt            | n/a       | If given, a checkpoint is loaded from this file                                                         |
 | pretrain_method      | PPO_JAX   | Method to pretrain (initialize) the policy. If different from PPO_JAX, it tries to use StableBaselines3 |
-| pretrain_total_steps | 1_000_000 | Total number of timesteps to do with PPO (for policy initialization                                     |
+| pretrain_total_steps | 1_000_000 | Total number of steps for pretraining the policy                                                        |
+
+## Neural network size
+
+| Arguments         | Default | Help                                 |
+|-------------------|---------|--------------------------------------|
+| neurons_per_layer | 128     | Number of neurons per (hidden) layer |
+| hidden_layers     | 2       | Number of hidden layers              |
 
 ## Enabling/disabling contributions (as for the ablation)
 
-Adding `--exp_certificate --weighted --cplip` enables both of our contributions (as used in the experiments in [1]). Similarly, `--exp_certificate --no-weighted --no-cplip` corresponds to using logRASMs but not our Lipschitz contributions, and `--no-exp_certificate --weighted --cplip` to using our Lipschitz contributions but with standard RASMs. Finally, `--no-exp_certificate --no-weighted --no-cplip` is the baseline verifier.
+Adding `--exp_certificate --weighted --cplip` enables both of our contributions (as used in the experiments in [1]). Similarly, `--exp_certificate --no-weighted --no-cplip`
+corresponds to using logRASMs but not our Lipschitz contributions, and `--no-exp_certificate --weighted --cplip` to using our Lipschitz contributions but with standard RASMs.
+Finally, `--no-exp_certificate --no-weighted --no-cplip` is the baseline verifier.
 
-| Arguments             | Default | Help                                                                                                         |
-|-----------------------|---------|--------------------------------------------------------------------------------------------------------------|
-| exp_certificate       | FALSE   | If True, train a logRASM (i.e., exponential certificate). If False, use a standard RASM                      |
-| weighted              | TRUE    | If True, use weighted norms to compute Lipschitz constants                                                   |
-| cplip                 | TRUE    | If True, use CPLip method to compute Lipschitz constants                                                     |
+| Arguments       | Default | Help                                                                                    |
+|-----------------|---------|-----------------------------------------------------------------------------------------|
+| exp_certificate | FALSE   | If True, train a logRASM (i.e., exponential certificate). If False, use a standard RASM |
+| weighted        | TRUE    | If True, use weighted norms to compute Lipschitz constants                              |
+| cplip           | TRUE    | If True, use CPLip method to compute Lipschitz constants                                |
 
 ## Learner arguments
 
-| Learner                       | Default  | Help                                                                      |
-|-------------------------------|----------|---------------------------------------------------------------------------|
-| Policy_learning_rate          | 5,00E-05 | Learning rate for changing the policy in the CEGIS loop                   |
-| V_learning_rate               | 5,00E-04 | Learning rate for changing the certificate in the CEGIS loop              |
-| epochs                        | 25       | Number of epochs to run in each iteration                                 |
-| num_samples_per_epoch         | 90000    | Total number of samples to train over in each epoch                       |
-| num_counterexamples_in_buffer | 30000    | Total number of samples to train over in each epoch                       |
-| batch_size                    | 4096     | Batch size used by the learner in each epoch                              |
-| expDecr_multiplier            | 1        | Multiply the weighted counterexample expected decrease loss by this value |
-| eps_decrease                  | 0        | Epsilon to the expected decrease loss function                            |
+| Learner                       | Default  | Help                                                                                                            |
+|-------------------------------|----------|-----------------------------------------------------------------------------------------------------------------|
+| Policy_learning_rate          | 5,00E-05 | Learning rate for changing the policy in the CEGIS loop                                                         |
+| V_learning_rate               | 5,00E-04 | Learning rate for changing the certificate in the CEGIS loop                                                    |
+| epochs                        | 25       | Number of epochs to run in each iteration                                                                       |
+| num_samples_per_epoch         | 90000    | Total number of samples to train over in each epoch                                                             |
+| num_counterexamples_in_buffer | 30000    | Number of counterexamples to keep in the buffer                                                                 |
+| batch_size                    | 4096     | Batch size used by the learner in each epoch                                                                    |
+| expDecr_multiplier            | 1        | Multiply the weighted counterexample expected decrease loss by this value                                       |
+| eps_decrease                  | 0        | Epsilon to the expected decrease loss function                                                                  |
+| mesh_loss                     | 0.001    | Mesh size used in the loss function                                                                             |
+| mesh_loss_decrease_per_iter   | 1        | Specifying the decrease factor in the mesh size used in the loss function per iteration (one means no decrease) |
 
 ## Verifier arguments
 
-| Verifier                  | Default   | Help                                                                                                                    |
-|---------------------------|-----------|-------------------------------------------------------------------------------------------------------------------------|
-| mesh_loss                 | 0.001     | Mesh size used in the loss function                                                                                     |
-| mesh_verify_grid_init     | 0.01      | Initial mesh size for verifying grid. Mesh is defined such that \|x-y\|_1 <= tau for any x in X and discretized point y |
-| mesh_verify_grid_min      | 0.01      | Minimum mesh size for verifying grid (before refinements within that iteration)                                         |
-| mesh_refine_min           | 1.00E-09  | Lowest allowed verification grid mesh size in the final verification                                                    |
-| max_refine_factor         | 10        | Maximum value to split each grid point into (per dimension), during the (local) refinement                              |
-| verify_batch_size         | 30000     | Number of states for which the verifier checks exp. decrease condition in the same batch.                               |
-| forward_pass_batch_size   | 1_000_000 | Batch size for performing forward passes on the neural network (reduce if this gives memory issues).                    |
-| noise_partition_cells     | 12        | Number of cells to partition the noise space in per dimension (to numerically integrate stochastic noise)               |
-| counterx_refresh_fraction | 0.50      | Fraction of the counter example buffer to renew after each iteration                                                    |
-| counterx_fraction         | 0.25      | Fraction of counter examples, compared to the total train data set.                                                     |
+| Verifier                  | Default   | Help                                                                                                                          |
+|---------------------------|-----------|-------------------------------------------------------------------------------------------------------------------------------|
+| mesh_verify_grid_init     | 0.01      | Initial mesh size for verifying grid. Mesh is defined such that \|x-y\|_1 <= tau for any x in X and discretized point y       |
+| mesh_refine_min           | 1.00E-09  | Lowest allowed verification grid mesh size in the final verification                                                          |
+| max_refine_factor         | 10        | Maximum value to split each grid point into (per dimension), during the (local) refinement                                    |
+| verify_batch_size         | 30000     | Number of states for which the verifier checks exp. decrease condition in the same batch (reduce if this gives memory issues) |
+| forward_pass_batch_size   | 1_000_000 | Batch size for performing forward passes on the neural network (reduce if this gives memory issues)                           |
+| noise_partition_cells     | 12        | Number of cells to partition the noise space in per dimension (to numerically integrate stochastic noise)                     |
+| counterx_refresh_fraction | 0.50      | Fraction of the counter example buffer to renew after each iteration                                                          |
+| counterx_fraction         | 0.25      | Fraction of counter examples, compared to the total train data set                                                            |
 
 # 8. Rebuilding the Docker container
 

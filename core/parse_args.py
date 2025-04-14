@@ -18,7 +18,7 @@ def parse_arguments(linfty, datetime, cwd):
 
     # JAX settings
     parser.add_argument('--high_precision', action=argparse.BooleanOptionalAction, default=False,
-                        help="If True, use JAX with 64-bit precision; otherwise, use 32-bit precision.")
+                        help="If True, use JAX with 64-bit precision; otherwise, use 32-bit precision")
 
     # GENERAL OPTIONS
     parser.add_argument('--model', type=str, default="LinearSystem",
@@ -50,11 +50,11 @@ def parse_arguments(linfty, datetime, cwd):
 
     ### POLICY INITIALIZATION ARGUMENTS
     parser.add_argument('--load_ckpt', type=str, default='',
-                        help="If given, a PPO checkpoint in loaded from this file")
+                        help="If given, a checkpoint is loaded from this file")
     parser.add_argument('--pretrain_method', type=str, default='PPO_JAX',
-                        help="Method to pretrain (initialize) the policy")
+                        help="Method to pretrain (initialize) the policy; If different from PPO_JAX, it tries to use StableBaselines3")
     parser.add_argument('--pretrain_total_steps', type=int, default=1_000_000,
-                        help="Total number of timesteps to do with PPO (for policy initialization")
+                        help="Total number of steps for pretraining the policy")
     parser.add_argument('--pretrain_num_envs', type=int, default=10,
                         help="Number of parallel environments in PPO (for policy initialization")
 
@@ -81,12 +81,10 @@ def parse_arguments(linfty, datetime, cwd):
                         help="The assumed minimal policy Lipschitz constant for computing the mesh_loss (only used when tauK_loss is specified)")
     parser.add_argument('--mesh_verify_grid_init', type=float, default=0.01,
                         help="Initial mesh size for verifying grid. Mesh is defined such that |x-y|_1 <= tau for any x in X and discretized point y")
-    parser.add_argument('--mesh_verify_grid_min', type=float, default=0.01,
-                        help="Minimum mesh size for verifying grid (before refinements within that iteration)")
 
     ### REFINE ARGUMENTS
     parser.add_argument('--not_refine_before_iter', type=int, default=0,
-                        help="Do not perform refinements in the verifier before the specified iteration.")
+                        help="Do not perform refinements in the verifier before the specified iteration")
     parser.add_argument('--mesh_refine_min', type=float, default=1e-9,
                         help="Lowest allowed verification grid mesh size in the final verification")
     parser.add_argument('--max_refine_factor', type=float, default=float('nan'),
@@ -100,7 +98,7 @@ def parse_arguments(linfty, datetime, cwd):
     parser.add_argument('--num_samples_per_epoch', type=int, default=90000,
                         help="Total number of samples to train over in each epoch")
     parser.add_argument('--num_counterexamples_in_buffer', type=int, default=30000,
-                        help="Total number of samples to train over in each epoch")
+                        help="Number of counterexamples to keep in the buffer")
     parser.add_argument('--batch_size', type=int, default=4096,
                         help="Batch size used by the learner in each epoch")
     parser.add_argument('--Policy_learning_rate', type=float, default=5e-5,
@@ -114,7 +112,7 @@ def parse_arguments(linfty, datetime, cwd):
     parser.add_argument('--loss_lipschitz_policy', type=float, default=4,
                         help="When the policy Lipschitz coefficient is below this value, then the loss is zero")
     parser.add_argument('--expDecr_multiplier', type=float, default=1,
-                        help="Multiply the weighted counterexample expected decrease loss by this value.")
+                        help="Multiply the weighted counterexample expected decrease loss by this value")
     parser.add_argument('--debug_train_step', action=argparse.BooleanOptionalAction, default=False,
                         help="If True, generate additional plots for the samples used in the last train step of an iteration")
     parser.add_argument('--auxiliary_loss', type=int, default=0,
@@ -124,27 +122,27 @@ def parse_arguments(linfty, datetime, cwd):
     parser.add_argument('--loss_decr_max', action=argparse.BooleanOptionalAction, default=False,
                         help="If True, also penalize the maximum (instead of the mean) exp. decrease violation")
     parser.add_argument('--eps_decrease', type=float, default=0,
-                        help="Epsilon to the expected decrease loss function.")
+                        help="Epsilon to the expected decrease loss function")
 
     ### VERIFIER ARGUMENTS
     parser.add_argument('--verify_batch_size', type=int, default=30000,
-                        help="Number of states for which the verifier checks exp. decrease condition in the same batch.")
+                        help="Number of states for which the verifier checks exp. decrease condition in the same batch")
     parser.add_argument('--forward_pass_batch_size', type=int, default=1_000_000,
-                        help="Batch size for performing forward passes on the neural network (reduce if this gives memory issues).")
+                        help="Batch size for performing forward passes on the neural network (reduce if this gives memory issues)")
     parser.add_argument('--noise_partition_cells', type=int, default=12,
                         help="Number of cells to partition the noise space in per dimension (to numerically integrate stochastic noise)")
     parser.add_argument('--counterx_refresh_fraction', type=float, default=0.50,
                         help="Fraction of the counter example buffer to renew after each iteration")
     parser.add_argument('--counterx_fraction', type=float, default=0.25,
-                        help="Fraction of counter examples, compared to the total train data set.")
+                        help="Fraction of counter examples, compared to the total train data set")
     parser.add_argument('--refine_threshold', type=float, default=1e9,
-                        help="Do not refine if the number of counterexamples is above this threshold.")
+                        help="Do not refine if the number of counterexamples is above this threshold")
     parser.add_argument('--verify_threshold', type=float, default=1e9,
-                        help="Do not verify if the number of points to check on is above this threshold.")
+                        help="Do not verify if the number of points to check on is above this threshold")
 
     ### LEARNER-VERIFIER CASES
     parser.add_argument('--exp_certificate', action=argparse.BooleanOptionalAction, default=False,
-                        help="If True, train a logRASM (i.e., exponential certificate). If False, use a standard RASM.")
+                        help="If True, train a logRASM (i.e., exponential certificate); If False, use a standard RASM")
     parser.add_argument('--weighted', action=argparse.BooleanOptionalAction, default=True,
                         help="If True, use weighted norms to compute Lipschitz constants")
     parser.add_argument('--cplip', action=argparse.BooleanOptionalAction, default=True,
@@ -156,26 +154,26 @@ def parse_arguments(linfty, datetime, cwd):
     parser.add_argument('--perturb_counterexamples', action=argparse.BooleanOptionalAction, default=True,
                         help="If True, counterexamples are perturbed before being added to the counterexample buffer")
     parser.add_argument('--min_lip_policy_loss', type=float, default=0,
-                        help="Minimum Lipschitz constant policy used in loss function learner.")
+                        help="Minimum Lipschitz constant policy used in loss function learner")
     parser.add_argument('--hard_violation_multiplier', type=float, default=10,
-                        help="Factor to multiply the counterexample weights for hard violations with.")
+                        help="Factor to multiply the counterexample weights for hard violations with")
     parser.add_argument('--weighted_counterexample_sampling', action=argparse.BooleanOptionalAction, default=False,
                         help="If True, use weighted sampling of counterexamples")
     parser.add_argument('--min_fraction_samples_per_region', type=float, default=0,
-                        help="Minimum fraction of samples in learner for each region/condition.")
+                        help="Minimum fraction of samples in learner for each region/condition")
 
     ### NEURAL NETWORK ARCHITECTURE
     parser.add_argument('--neurons_per_layer', type=int, default=128,
-                        help="Number of neurons per (hidden) layer.")
+                        help="Number of neurons per (hidden) layer")
     parser.add_argument('--hidden_layers', type=int, default=2,
-                        help="Number of hidden layers.")
+                        help="Number of hidden layers")
 
     ## LIPSCHITZ COEFFICIENT ARGUMENTS
     parser.add_argument('--split_lip', action=argparse.BooleanOptionalAction, default=True,
                         help="If True, use L_f split over the system state space and control action space")
     parser.add_argument('--improved_softplus_lip', action=argparse.BooleanOptionalAction, default=False,
                         help="If True, use improved (local) Lipschitz constants for softplus in V (if False, "
-                             "global constant of 1 is used). Can only be used without logRASMs enabled.")
+                             "global constant of 1 is used); Can only be used without logRASMs enabled")
 
     args = parser.parse_args()
 
