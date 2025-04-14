@@ -328,7 +328,7 @@ folder). While not necessary for reproducing the results, you can retrain these 
 bash train_SB3_all.sh | tee output/train_SB3_all.out
 ```
 
-Next, the following command reproduces Table 3 in [1] and exports these to the respective `.tex` and `.csv` files in the `output/` folder:
+Next, the following command reproduces Table 3 in [1] and exports it to the respective `.tex` and `.csv` files in the `output/` folder:
 
 ```
 bash experiments/run_stablebaselines.sh | tee output/full_SB3.out
