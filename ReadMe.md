@@ -280,7 +280,7 @@ We provide two scripts to replicate a subset of the results from [1]:
     ```
     bash experiments/run_partial_benchmarks.sh | tee output/partial_benchmarks.out
     ```
-    - Expected run time on GPU: 8 hours (tested on a Debian server, with an AMD Ryzen Threadripper PRO 5965WX CPU, 512~GB of RAM, and an NVIDIA GeForce RTX~4090 GPU)
+    - Expected run time on GPU: 8 hours (tested on a Debian server, with an AMD Ryzen Threadripper PRO 5965WX CPU, 512 GB of RAM, and an NVIDIA GeForce RTX 4090 GPU)
     - Expected run time on CPU: Not tested
 
 Running either of these scripts generates results in the `output/` folder (if you followed the Docker instructions above, these results should also appear in the folder on the host machine where you started the Docker container from). In particular, the partial benchmark set yields the following results (the tiny set only runs the experiments for `linear-sys`):
