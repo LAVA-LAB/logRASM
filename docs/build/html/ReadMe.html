@@ -59,9 +59,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#installing-from-source">3. Installing from source</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#step-1-install-miniconda">Step 1: Install Miniconda</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#step-2-create-a-new-conda-environment">Step 2: Create a new conda environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#step-3-installing-dependencies">Step 3: Installing dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-create-a-conda-environment">Step 1: Create a Conda environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-install-jax">Step 2: Install JAX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-installing-remaining-dependencies">Step 3: Installing remaining dependencies</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#running-for-a-single-benchmark-smoke-test">4. Running for a single benchmark (smoke test)</a><ul>
@@ -139,23 +139,21 @@ For more details about the approach, we refer to the paper above.</p>
 </section>
 <section id="a-note-on-cuda-gpu-acceleration">
 <h2>A note on CUDA / GPU acceleration<a class="headerlink" href="#a-note-on-cuda-gpu-acceleration" title="Link to this heading"></a></h2>
-<p>This code is written in JAX and can be run on GPU with CUDA. We provide a Docker container with CUDA support enabled (see <a class="reference internal" href="#2-run-from-a-docker-container-preferred"><span class="xref myst">step 2</span></a> below).
-While we have tested the Docker container on multiple systems (listed below), running JAX code with GPU acceleration within a Docker container can be tricky to set up. If you
-encounter problems, feel free to open an issue on GitHub or send an email (thombadings&#64;gmail.com).</p>
-<p>The Docker container with GPU support enabled has been tested on:</p>
+<p>This code is written in JAX and can be run on GPU with CUDA version 12. We provide a Docker container with CUDA support enabled (see <a class="reference internal" href="#2-run-from-a-docker-container-preferred"><span class="xref myst">step 2</span></a> below).
+We have tested the Docker container with GPU acceleration through CUDA on the following setups:</p>
 <ol class="arabic simple">
-<li><p>Linux 6.1.0-23-amd64, running Debian GNU/Linux 12, Cuda version 12.5, NVIDIA driver version 555.42.06.</p></li>
-<li><p>Linux 6.8.0-49-generic, running Ubuntu 22.04.5 LTS, Cuda version 12.4, NVIDIA driver version 550.120.</p></li>
+<li><p>Linux 6.1.0-23-amd64, running Debian GNU/Linux 12, CUDA version 12.5, NVIDIA driver version 555.42.06</p></li>
+<li><p>Linux 6.8.0-49-generic, running Ubuntu 22.04.5 LTS, CUDA version 12.4, NVIDIA driver version 550.120</p></li>
+<li><p>Linux 6.1.0-25-amd64,running Debian GNU/Linux 12, CUDA version 12.2, NVIDIA driver version 535.216.01</p></li>
 </ol>
+<p>If you encounter problems running with GPU acceleration, feel free to open an issue on GitHub.</p>
 <blockquote>
-<div><p><strong><em>NOTE:</em></strong> GPU acceleration with JAX is only fully supported via CUDA. The support of JAX for Apple GPUs is only experimental and is not enough to run our code. To reproduce the
-results form [1] in reasonable time, running our code with GPU acceleration is necessary. More details can be
-found in the <a class="reference external" href="https://docs.jax.dev/en/latest/installation.html">JAX installation guide</a>.</p>
+<div><p><strong><em>NOTE:</em></strong> GPU acceleration with JAX is only fully supported via CUDA. The support of JAX for Apple GPUs is only experimental and does not have all functionalities needed to run our code. To reproduce the results form [1] in reasonable time, running our code with GPU acceleration is necessary. More details can be found in the <a class="reference external" href="https://docs.jax.dev/en/latest/installation.html">JAX installation guide</a>.</p>
 </div></blockquote>
 </section>
 <section id="code-documentation">
 <h2>Code Documentation<a class="headerlink" href="#code-documentation" title="Link to this heading"></a></h2>
-<p>Documentation of the core functionalities of the code are provided in the <a class="reference internal" href="#Code/neural_stochastic_backup/docs/build/html/index.html"><span class="xref myst">code documentation</span></a>.</p>
+<p>Documentation of the core Python functions of the code are provided in the <a class="reference internal" href="#Code/neural_stochastic_backup/docs/build/html/index.html"><span class="xref myst">code documentation</span></a> (generated with Sphinx).</p>
 </section>
 </section>
 <section id="what-does-this-code-do">
@@ -163,7 +161,7 @@ found in the <a class="reference external" href="https://docs.jax.dev/en/latest/
 <p>While we refer to the paper [1] for details, we briefly explain what our code computes.
 In a nutshell, given</p>
 <ol class="arabic simple">
-<li><p>a stochastic dynamical system, and</p></li>
+<li><p>a discrete-time stochastic dynamical system, and</p></li>
 <li><p>a reach-avoid specification, i.e., a tuple $(X_T, X_U, \rho)$ of a set of target states $X_T$, a set of
 unsafe states $X_U$, and a probability bound $\rho \in (0,1)$,</p></li>
 </ol>
@@ -176,9 +174,9 @@ If a valid RASM is found, our code terminates and returns the RASM as proof that
 <section id="run-from-a-docker-container-preferred">
 <h1>2. Run from a Docker container (preferred)<a class="headerlink" href="#run-from-a-docker-container-preferred" title="Link to this heading"></a></h1>
 <p>The preferred way to run our code is by using the Docker container that we provide.
-Our Docker container is built upon Ubuntu, on top of which we install Miniconda, JAX, and the other Python dependencies (see the Dockerfile in this artifact for details).</p>
+Our Docker container is built upon Ubuntu, on top of which we installed Miniconda, JAX, and the other Python dependencies (see the Dockerfile in this artifact for details).</p>
 <blockquote>
-<div><p><strong><em>NOTE:</em></strong> On Ubuntu, Docker binds by default to a socket that other users can only access using sudo. Thus, it may be necessary to run Docker commands using sudo.
+<div><p><strong><em>NOTE:</em></strong> On Ubuntu, Docker binds by default to a socket that other users can only access using sudo. Thus, it may be necessary to run Docker commands using <code class="docutils literal notranslate"><span class="pre">sudo</span></code>.
 Alternatively, one can follow <a class="reference external" href="https://docs.docker.com/engine/install/linux-postinstall/">this guide on the Docker website</a> to avoid having to run with sudo.</p>
 </div></blockquote>
 <section id="step-1-pull-or-download-the-docker-container">
@@ -194,22 +192,19 @@ Alternatively, one can follow <a class="reference external" href="https://docs.d
 <p>Our implementation is written in JAX and can be accelerated by running on an NVIDIA GPU with CUDA.
 If you want to run with GPU acceleration, you can continue with step 2a; otherwise, you can continue with step 2b.</p>
 <blockquote>
-<div><p><strong><em>NOTE:</em></strong> The Docker container above is built for AMD and X86 architectures. In addition, we also provide an ARM version of the container, which can be pulled from Docker Hub
-via <code class="docutils literal notranslate"><span class="pre">thombadings/lograsm:v1-arm</span></code> or loaded via <code class="docutils literal notranslate"><span class="pre">cav25_lograsm-arm.tar</span></code>. However, the ARM version of the container is not compatible with CUDA. Therefore, the runtimes with the
-ARM version are not representative of [1], and we recommend using the AMD / X86 version with GPU acceleration for serious benchmarking.</p>
+<div><p><strong><em>NOTE:</em></strong> The Docker container above is built for AMD and X86 architectures. In addition, we also provide an ARM version of the container (e.g., for Apple Silicon), which can be pulled from Docker Hub via <code class="docutils literal notranslate"><span class="pre">thombadings/lograsm:v1-arm</span></code> or loaded via <code class="docutils literal notranslate"><span class="pre">cav25_lograsm-arm.tar</span></code>. However, the ARM version of the container is not compatible with CUDA. Therefore, the runtimes with the ARM version are not representative of [1], and we recommend using the AMD / X86 version with GPU acceleration for serious benchmarking.</p>
 </div></blockquote>
 </section>
 <section id="step-2a-run-with-gpu-acceleration">
 <h2>Step 2a: Run with GPU acceleration<a class="headerlink" href="#step-2a-run-with-gpu-acceleration" title="Link to this heading"></a></h2>
-<p>To run with GPU acceleration, you need to install:</p>
+<p>To run with GPU acceleration, you need an NVIDIA GPU that support CUDA and install:</p>
 <ol class="arabic simple">
-<li><p>The NVIDIA GPU driver and CUDA toolkit (see the introduction of the ReadMe for the versions we have tested on)</p></li>
-<li><p>The NVIDIA Container Toolkit</p></li>
+<li><p>An NVIDIA driver version compatible with CUDA 12.X (see <a class="reference external" href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html">this page</a> for compatible driver versions)</p></li>
+<li><p>The NVIDIA CUDA 12 Toolkit (can be installed from <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">the NVIDIA website</a>)</p></li>
+<li><p>The NVIDIA Container Toolkit (can be installed using <a class="reference external" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html">these instructions</a>)</p></li>
 </ol>
-<p>We assume you already have the NVIDIA GPU driver and CUDA toolkit installed. The CUDA toolkit can be installed
-from <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">the NVIDIA website</a>.</p>
-<p>Instructions for installing the NVIDIA container toolkit <a class="reference external" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html">can be found here</a>.
-For example, on Ubuntu or Debian, you can install the NVIDIA Container Toolkit as follows:</p>
+<p>We assume you already have the NVIDIA GPU driver and CUDA 12 toolkit installed.
+Then, on Ubuntu or Debian, you can install the NVIDIA Container Toolkit (which is necessary to let Docker use CUDA) as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">fsSL</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nvidia</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">libnvidia</span><span class="o">-</span><span class="n">container</span><span class="o">/</span><span class="n">gpgkey</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">gpg</span> <span class="o">--</span><span class="n">dearmor</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">keyrings</span><span class="o">/</span><span class="n">nvidia</span><span class="o">-</span><span class="n">container</span><span class="o">-</span><span class="n">toolkit</span><span class="o">-</span><span class="n">keyring</span><span class="o">.</span><span class="n">gpg</span> \
   <span class="o">&amp;&amp;</span> <span class="n">curl</span> <span class="o">-</span><span class="n">s</span> <span class="o">-</span><span class="n">L</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">nvidia</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">libnvidia</span><span class="o">-</span><span class="n">container</span><span class="o">/</span><span class="n">stable</span><span class="o">/</span><span class="n">deb</span><span class="o">/</span><span class="n">nvidia</span><span class="o">-</span><span class="n">container</span><span class="o">-</span><span class="n">toolkit</span><span class="o">.</span><span class="n">list</span> <span class="o">|</span> \
     <span class="n">sed</span> <span class="s1">&#39;s#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g&#39;</span> <span class="o">|</span> \
@@ -224,8 +219,8 @@ For example, on Ubuntu or Debian, you can install the NVIDIA Container Toolkit a
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">rm</span> <span class="o">--</span><span class="n">runtime</span><span class="o">=</span><span class="n">nvidia</span> <span class="o">--</span><span class="n">gpus</span> <span class="nb">all</span> <span class="n">ubuntu</span> <span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span>
 </pre></div>
 </div>
-<p>To use the docker container with GPU acceleration, open a terminal and navigate to the folder that you want to use to synchronize results.
-Then, run the following command:</p>
+<p>To use the Docker container with GPU acceleration, open a terminal and navigate to the folder that you want to use to synchronize results.
+Then, run the following command to start the Docker container:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">gpus</span> <span class="nb">all</span> <span class="o">--</span><span class="n">runtime</span><span class="o">=</span><span class="n">nvidia</span> <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s2">&quot;$(pwd)&quot;</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">home</span><span class="o">/</span><span class="n">lograsm</span><span class="o">/</span><span class="n">output</span> <span class="o">-</span><span class="n">it</span> <span class="n">thombadings</span><span class="o">/</span><span class="n">lograsm</span><span class="p">:</span><span class="n">v1</span>
 </pre></div>
 </div>
@@ -234,7 +229,7 @@ Then, run the following command:</p>
 <h2>Step 2b: Run without GPU acceleration<a class="headerlink" href="#step-2b-run-without-gpu-acceleration" title="Link to this heading"></a></h2>
 <p>All experiments in [1] are run on a GPU, and we do not recommend performing serious benchmarking without GPU acceleration. However, you can run the Docker container without GPU
 acceleration as well (be aware of significantly higher run times).</p>
-<p>To use the docker container without GPU acceleration, open a terminal and navigate to the folder that you want to use to synchronize results.
+<p>To use the Docker container without GPU acceleration, open a terminal and navigate to the folder that you want to use to synchronize results.
 Then, run the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">mount</span> <span class="nb">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s2">&quot;$(pwd)&quot;</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">home</span><span class="o">/</span><span class="n">lograsm</span><span class="o">/</span><span class="n">output</span> <span class="o">-</span><span class="n">it</span> <span class="n">thombadings</span><span class="o">/</span><span class="n">lograsm</span><span class="p">:</span><span class="n">v1</span>
 </pre></div>
@@ -242,53 +237,38 @@ Then, run the following command:</p>
 </section>
 <section id="step-3-running-the-code">
 <h2>Step 3: Running the code<a class="headerlink" href="#step-3-running-the-code" title="Link to this heading"></a></h2>
-<p>After starting the Docker container with (step 2a) or without (step 2b) GPU acceleration, you will see a prompt inside the docker container. The README in this folder is what you
-are reading. Now, you are ready to run the code for a single model (Section 4) or to replicate the experiments presented in [1] (Section 5).</p>
+<p>After starting the Docker container with (step 2a) or without (step 2b) GPU acceleration, you will see a prompt inside the Docker container. The ReadMe in this folder is what you
+are reading. Now, you are ready to run the code for a single model (Section 4) or to replicate (a subset of) the experiments presented in [1] (Section 5).</p>
 </section>
 </section>
 <section id="installing-from-source">
 <h1>3. Installing from source<a class="headerlink" href="#installing-from-source" title="Link to this heading"></a></h1>
 <p>For standard usage, we recommend using the Docker container, but you can also build our tool from source.
-We recommend installing in a conda environment; however, other installation methods are also possible.
+We recommend installing in a conda environment, but other installation methods are also possible.
 Below, we list the steps needed to install via (Mini)conda.</p>
-<section id="step-1-install-miniconda">
-<h2>Step 1: Install Miniconda<a class="headerlink" href="#step-1-install-miniconda" title="Link to this heading"></a></h2>
-<p>Download Miniconda, e.g., using the following commands (<a class="reference external" href="https://docs.anaconda.com/free/miniconda/">see here</a> for details):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="o">~/</span><span class="n">miniconda3</span>
-<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">repo</span><span class="o">.</span><span class="n">anaconda</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">miniconda</span><span class="o">/</span><span class="n">Miniconda3</span><span class="o">-</span><span class="n">latest</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">O</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">miniconda</span><span class="o">.</span><span class="n">sh</span>
-<span class="n">bash</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">miniconda</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">b</span> <span class="o">-</span><span class="n">u</span> <span class="o">-</span><span class="n">p</span> <span class="o">~/</span><span class="n">miniconda3</span>
-<span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">miniconda</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
-</div>
-<p>Then, initialize Miniconda using the following commands (and close and re-open the terminal):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">conda</span> <span class="n">init</span> <span class="n">bash</span>
-<span class="o">~/</span><span class="n">miniconda3</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">conda</span> <span class="n">init</span> <span class="n">zsh</span>
-</pre></div>
-</div>
-</section>
-<section id="step-2-create-a-new-conda-environment">
-<h2>Step 2: Create a new conda environment<a class="headerlink" href="#step-2-create-a-new-conda-environment" title="Link to this heading"></a></h2>
-<p>The following command creates a new conda environment, specifically with Python version 3.12:</p>
+<section id="step-1-create-a-conda-environment">
+<h2>Step 1: Create a Conda environment<a class="headerlink" href="#step-1-create-a-conda-environment" title="Link to this heading"></a></h2>
+<p>Assuming that <a class="reference external" href="https://docs.anaconda.com/free/miniconda/">you have (Mini)conda installed</a>, first create a new environment with Python version 3.12:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">lograsm</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.12</span>
 <span class="n">conda</span> <span class="n">activate</span> <span class="n">lograsm</span>
 </pre></div>
 </div>
-<p>Next, proceed with either step 3a or 3b (for installing with or without GPU acceleration via CUDA, respectively).</p>
 </section>
-<section id="step-3-installing-dependencies">
-<h2>Step 3: Installing dependencies<a class="headerlink" href="#step-3-installing-dependencies" title="Link to this heading"></a></h2>
-<p>Our implementation uses Jax, which, in turn, can use GPU acceleration via CUDA.
-However, installing CUDA can be tricky in some cases.
-Thus, we recommend installing via Conda.
-To install JAX with acceleration, run</p>
+<section id="step-2-install-jax">
+<h2>Step 2: Install JAX<a class="headerlink" href="#step-2-install-jax" title="Link to this heading"></a></h2>
+<p>To install JAX with GPU acceleration, run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="s2">&quot;jax[cuda12]&quot;</span>
 </pre></div>
 </div>
-<p>To install JAX without GPU acceleration, run</p>
+<p>This will install the necessary CUDA dependencies within the Conda environment</p>
+<p>To instead install JAX without GPU acceleration, run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">jax</span>
 </pre></div>
 </div>
-<p>Then, install the remaining requirements:</p>
+</section>
+<section id="step-3-installing-remaining-dependencies">
+<h2>Step 3: Installing remaining dependencies<a class="headerlink" href="#step-3-installing-remaining-dependencies" title="Link to this heading"></a></h2>
+<p>Finally, install the remaining Python dependencies:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
@@ -297,18 +277,16 @@ To install JAX with acceleration, run</p>
 <section id="running-for-a-single-benchmark-smoke-test">
 <h1>4. Running for a single benchmark (smoke test)<a class="headerlink" href="#running-for-a-single-benchmark-smoke-test" title="Link to this heading"></a></h1>
 <p>The main Python file to run the code is <code class="docutils literal notranslate"><span class="pre">run.py</span></code>.
-See <a class="reference internal" href="#6-overview-of-input-arguments"><span class="xref myst">Section 6</span></a> of this ReadMe for a full overview of the available input arguments.
-A minimal command to train and verify a neural network policy is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model</span> <span class="o">&lt;</span><span class="n">benchmark</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">probability_bound</span> <span class="o">&lt;</span><span class="n">bound</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">pretrain_method</span> <span class="o">&lt;</span><span class="n">algorithm</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">pretrain_total_steps</span> <span class="o">&lt;</span><span class="n">steps</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">mesh_loss</span> <span class="o">&lt;</span><span class="n">mesh_loss</span><span class="o">&gt;</span>
+See <a class="reference internal" href="#7-overview-of-input-arguments"><span class="xref myst">Section 7</span></a> of this ReadMe for a full overview of the available input arguments.
+A minimal command to train and verify a logRASM is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model</span> <span class="o">&lt;</span><span class="n">benchmark</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">probability_bound</span> <span class="o">&lt;</span><span class="n">bound</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">pretrain_method</span> <span class="o">&lt;</span><span class="n">algorithm</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">pretrain_total_steps</span> <span class="o">&lt;</span><span class="n">steps</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">mesh_loss</span> <span class="o">&lt;</span><span class="n">mesh_loss</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">exp_certificate</span>
 </pre></div>
 </div>
 <p>In this command, <code class="docutils literal notranslate"><span class="pre">&lt;benchmark&gt;</span></code> specifies the benchmark to run, <code class="docutils literal notranslate"><span class="pre">&lt;bound&gt;</span></code> is the probability bound of the reach-avoid specification, <code class="docutils literal notranslate"><span class="pre">&lt;algorithm&gt;</span></code> is the method used to pretrain the
-input neural network policy for the specified number of steps <code class="docutils literal notranslate"><span class="pre">&lt;steps&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">&lt;mesh_loss&gt;</span></code> specifies the discretization cell width used in the learner’s loss function (see below
-for
-the options).</p>
+input neural network policy for the specified number of steps <code class="docutils literal notranslate"><span class="pre">&lt;steps&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">&lt;mesh_loss&gt;</span></code> specifies the discretization cell width used in the learner’s loss function (see below for the options).</p>
 <section id="smoke-test">
 <h2>Smoke test<a class="headerlink" href="#smoke-test" title="Link to this heading"></a></h2>
-<p>The following example can be run to verify if the code runs correctly. If the code runs on GPU, you should see <code class="docutils literal notranslate"><span class="pre">Running</span> <span class="pre">JAX</span> <span class="pre">on</span> <span class="pre">device:</span> <span class="pre">gpu</span></code> in the terminal output (after the
+<p>The following example can be run to verify if the code runs correctly. If the code runs on GPU, you should see <code class="docutils literal notranslate"><span class="pre">Running</span> <span class="pre">JAX</span> <span class="pre">on</span> <span class="pre">device:</span> <span class="pre">gpu</span></code> in the terminal output (directly after the
 overview of the arguments):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model</span> <span class="n">LinearSystem</span> <span class="o">--</span><span class="n">probability_bound</span> <span class="mf">0.9999</span> <span class="o">--</span><span class="n">pretrain_method</span> <span class="n">PPO_JAX</span> <span class="o">--</span><span class="n">pretrain_total_steps</span> <span class="mi">100000</span> <span class="o">--</span><span class="n">mesh_loss</span> <span class="mf">0.001</span> <span class="o">--</span><span class="n">exp_certificate</span>
 </pre></div>
@@ -316,7 +294,7 @@ overview of the arguments):</p>
 <p>This example first pretrains a policy on the <code class="docutils literal notranslate"><span class="pre">linear-sys</span></code> benchmark for 100k steps using PPO and exports this policy as a checkpoint to the folder <code class="docutils literal notranslate"><span class="pre">ckpt/</span></code>. Then, this policy is
 given as input to the learner-verifier framework, which trains a logRASM that verifies a reach-avoid specification with a probability bound of $\rho = 0.9999$.</p>
 <ul>
-<li><p><strong>Expected runtime for this command:</strong> 1 minute on GPU, or 3 minutes on CPU.</p></li>
+<li><p><strong>Expected runtime for this command:</strong> 1-2 minute on GPU, or 3-5 minutes on CPU.</p></li>
 <li><p><strong>Expected result:</strong> A folder <code class="docutils literal notranslate"><span class="pre">output/date=&lt;datetime&gt;_model=LinearSystem_p=0.9999_seed=1_alg=PPO_JAX</span></code> is created, in which the following results are stored:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">&lt;datetime&gt;_certifcate_Iteration0.pdf</span></code> / <code class="docutils literal notranslate"><span class="pre">.png</span></code> shows the learned logRASM:</p>
@@ -358,28 +336,52 @@ discretization used to validate the RASM empirically.</p>
 <li><p>Experiments on the 2D benchmarks with policies pre-trained with other RL algorithms in Stable-Baselines3 (Table 3 in [1])</p></li>
 <li><p>Comparison of our Lipschitz constants to LipBaB (Table 5 in the appendix of [1])</p></li>
 </ol>
-<p>Since reproducing all these results takes multiple weeks, we also provide an option to reproduce the results partially.</p>
+<p>Since reproducing all results takes multiple weeks, we also provide an option to reproduce the results partially.</p>
 <section id="resolving-out-of-memory-errors">
 <h2>Resolving out-of-memory errors<a class="headerlink" href="#resolving-out-of-memory-errors" title="Link to this heading"></a></h2>
 <p>The provided experiments scripts contain the same parameters as used in the experiments of [1], which are run on server running Debian, with an AMD Ryzen Threadripper PRO 5965WX
 CPU, 512 GB of RAM, and an NVIDIA GeForce RTX 4090 GPU. When running on a machine with less resources, you might get out-of-memory errors. To resolve these issues, try lowering the
 following parameters:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--verify_batch_size</span></code>, which is 30000 by default and can be reduced to, e.g., 5000 (or even lower)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--forward_pass_batch_size</span></code>, which is 1 million by default and can be reduce to, e.g., 100k</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--verify_batch_size</span></code>, which is 30000 by default and might have to be reduced to, e.g., 5000 on a typical laptop (or even lower)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--forward_pass_batch_size</span></code>, which is 1 million by default and might have to be reduced to, e.g., 100k on a typical laptop</p></li>
 </ul>
-<p>We recommend first lowering the <code class="docutils literal notranslate"><span class="pre">verify_batch_size</span></code>, and only changing <code class="docutils literal notranslate"><span class="pre">forward_pass_batch_size</span></code> if that does not resolve the error.</p>
+<p>Moreover, when running on a less powerful machine (or on CPU), you may want to increase the timeout to obtain results on more instances.</p>
+<p>You can also directly pass these parameters to the experiment script we describe below.
+For example, to run the <em>tiny benchmark set</em> (see below) with a verify batch size of 3000, a forward pass batch size of 100k, and all timeouts multiplied by two, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_tiny_benchmarks</span><span class="o">.</span><span class="n">sh</span> <span class="mi">3000</span> <span class="mi">100000</span> <span class="mi">2</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">tiny_benchmarks</span><span class="o">.</span><span class="n">out</span>
+</pre></div>
+</div>
+<p>Note that you either have to specify all three arguments or none at all.
+The multiplication of the timeouts is taken compared to the default timeouts (as used in the experiments in [1]).</p>
 </section>
 <section id="reproducing-the-results-from-1-partially">
 <h2>Reproducing the results from [1] partially<a class="headerlink" href="#reproducing-the-results-from-1-partially" title="Link to this heading"></a></h2>
-<p>To reproduce the experiments partially, run the following command in the main directory of the artifact (expected run time with GPU acceleration: about 8-9 hours):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_partial_benchmarks</span><span class="o">.</span><span class="n">sh</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">/</span><span class="n">partial_benchmarks</span><span class="o">.</span><span class="n">out</span>
+<p>We provide two scripts to replicate a subset of the results from [1]:</p>
+<ol class="arabic">
+<li><p><strong>Tiny benchmark set</strong> (recommended when running on a laptop or on CPU)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_tiny_benchmarks</span><span class="o">.</span><span class="n">sh</span> <span class="mi">30000</span> <span class="mi">1000000</span> <span class="mi">6</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">tiny_benchmarks</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
 </div>
-<p>Running this script generates the following outputs in the <code class="docutils literal notranslate"><span class="pre">output/</span></code> folder (if you followed the Docker instructions above, these results should also appear in the folder on the
-host machine where you started the Docker container from):</p>
+<p>When encountering out-of-memory errors, try reducing the batch sizes (see <a class="reference internal" href="#resolving-out-of-memory-errors"><span class="xref myst">the section above</span></a>). The timeout multiplier of 6 helps to obtain more results within the timout when running on CPU.</p>
+<ul class="simple">
+<li><p>Expected run time on CPU: XXX hours (tested on an Apple Macbook Pro M4 Pro, 24 GB of RAM)</p></li>
+<li><p>Expected run time on GPU: XXX hours (tested on a XXX)</p></li>
+</ul>
+</li>
+<li><p><strong>Small benchmark set:</strong> (recommended when running on a more powerful machine)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_partial_benchmarks</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">partial_benchmarks</span><span class="o">.</span><span class="n">out</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Expected run time on GPU: 8 hours (tested on a Debian server, with an AMD Ryzen Threadripper PRO 5965WX CPU, 512~GB of RAM, and an NVIDIA GeForce RTX~4090 GPU)</p></li>
+<li><p>Expected run time on CPU: Not tested</p></li>
+</ul>
+</li>
+</ol>
+<p>Running either of these scripts generates results in the <code class="docutils literal notranslate"><span class="pre">output/</span></code> folder (if you followed the Docker instructions above, these results should also appear in the folder on the host machine where you started the Docker container from). In particular, the partial benchmark set yields the following results (the tiny set only runs the experiments for <code class="docutils literal notranslate"><span class="pre">linear-sys</span></code>):</p>
 <ul>
-<li><p><strong>Trained logRASM figures</strong>: Plot the logRASMs for the four 2D benchmarks, exported to <code class="docutils literal notranslate"><span class="pre">output/figures/</span></code> and the respective subfoldere therein:</p>
+<li><p><strong>Trained logRASM figures</strong>: Plot the logRASMs for the four 2D benchmarks, exported to <code class="docutils literal notranslate"><span class="pre">output/figures/</span></code> and the respective subfolder therein:</p>
 <p><img src="./img/linsys.png" width="170px"><img src="./img/linsys1.png" width="170px"><img src="./img/pendulum.png" width="170px"><img src="./img/collisionavoid.png" width="170px"></p>
 </li>
 <li><p><strong>Ablation study (2D benchmarks):</strong> Partial version of Table 1 in [1], exported to <code class="docutils literal notranslate"><span class="pre">output/main-benchmarks_table_&lt;datetime&gt;.tex</span></code> and <code class="docutils literal notranslate"><span class="pre">.csv</span></code>:</p>
@@ -401,24 +403,24 @@ same machine as in [1], the resulting runtimes are higher.</p>
 <h2>Reproducing the results from [1] completely<a class="headerlink" href="#reproducing-the-results-from-1-completely" title="Link to this heading"></a></h2>
 <p>To reproduce the experiments completely, run all of the following commands. Note that the expected total runtime is multiple weeks.</p>
 <p>First, reproduce the logRASMs presented in Figure 5 in [1] by running:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_figures</span><span class="o">.</span><span class="n">sh</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">/</span><span class="n">full_figures</span><span class="o">.</span><span class="n">out</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_figures</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">full_figures</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
 </div>
 <p>Second, the following command reproduces Tables 1 and 2 in [1] and exports these to the respective <code class="docutils literal notranslate"><span class="pre">.tex</span></code> and <code class="docutils literal notranslate"><span class="pre">.csv</span></code> files in the <code class="docutils literal notranslate"><span class="pre">output/</span></code> folder:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_main</span><span class="o">.</span><span class="n">sh</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">/</span><span class="n">full_main</span><span class="o">.</span><span class="n">out</span>
-<span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_hard</span><span class="o">.</span><span class="n">sh</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">/</span><span class="n">full_hard</span><span class="o">.</span><span class="n">out</span>
-<span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_stablebaselines</span><span class="o">.</span><span class="n">sh</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">/</span><span class="n">full_SB3</span><span class="o">.</span><span class="n">out</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_main</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">full_main</span><span class="o">.</span><span class="n">out</span>
+<span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_hard</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">full_hard</span><span class="o">.</span><span class="n">out</span>
+<span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_stablebaselines</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">full_SB3</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
 </div>
 <p>For the Stable-Baselines3 experiments, we provide input policies trained with TRPO, TQC, SAC, and A2C as pretrained checkpoints in this repository (in the <code class="docutils literal notranslate"><span class="pre">ckpt_pretrain_sb3/</span></code>
 folder). While not necessary for reproducing the results, you can retrain these policies by running:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">train_SB3_all</span><span class="o">.</span><span class="n">sh</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">/</span><span class="n">train_SB3_all</span><span class="o">.</span><span class="n">out</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">train_SB3_all</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">train_SB3_all</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
 </div>
 <p>Finally, the following command runs the comparison to LipBaB, an anytime algorithm for computing upper bounds on Lipschitz constants for neural networks. These experiments are
 presented in Table 5 in the appendix of [1], and can be reproduced by running (files exported to <code class="docutils literal notranslate"><span class="pre">output/LipBaB_table_&lt;datetime&gt;.tex</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_LipBaB</span><span class="o">.</span><span class="n">sh</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">/</span><span class="n">experiments_LipBaB</span><span class="o">.</span><span class="n">out</span>
-<span class="n">python3</span> <span class="n">LipBaB_interpret_results</span><span class="o">.</span><span class="n">py</span> <span class="o">&lt;</span> <span class="n">output</span><span class="o">/</span><span class="n">experiments_LipBaB</span><span class="o">.</span><span class="n">out</span> <span class="o">&gt;</span> <span class="n">output</span><span class="o">/</span><span class="n">LipBaB_table</span><span class="o">.</span><span class="n">tex</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_LipBaB</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">experiments_LipBaB</span><span class="o">.</span><span class="n">out</span>
+<span class="n">python3</span> <span class="n">LipBaB_interpret_results</span><span class="o">.</span><span class="n">py</span> <span class="o">&lt;</span> <span class="n">output</span><span class="o">/</span><span class="n">experiments_LipBaB</span><span class="o">.</span><span class="n">out</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">LipBaB_table</span><span class="o">.</span><span class="n">tex</span>
 </pre></div>
 </div>
 <p>This script runs LipBaB on several checkpoints of learned RASMs (together with the corresponding policy), which we provide as pretrained checkpoints in this repository.
@@ -437,11 +439,9 @@ This script is called <code class="docutils literal notranslate"><span class="pr
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">train_SB3</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model</span> <span class="n">LinearSystem</span> <span class="o">--</span><span class="n">layout</span> <span class="mi">0</span> <span class="o">--</span><span class="n">algorithm</span> <span class="n">TRPO</span> <span class="o">--</span><span class="n">total_steps</span> <span class="mi">100000</span> <span class="o">--</span><span class="n">seed</span> <span class="mi">1</span> <span class="o">--</span><span class="n">num_envs</span> <span class="mi">10</span> <span class="o">--</span><span class="n">neurons_per_layer</span> <span class="mi">128</span> <span class="o">--</span><span class="n">hidden_layers</span> <span class="mi">3</span>
 </pre></div>
 </div>
-<p>The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C (see <a class="reference internal" href="#4.-reproducing-results-from-the-paper"><span class="xref myst">Section 5</span></a> for details).</p>
+<p>The algorithms we use for our experiments are TRPO, TQC, SAC, and A2C.</p>
 <blockquote>
-<div><p><strong><em>NOTE:</em></strong> We have experience issues running Stable-Baselines3 within the Docker container with GPU acceleration. run the <code class="docutils literal notranslate"><span class="pre">train_SB3.py</span></code> script above, please run the Docker
-container without GPU acceleration or build the code from source. Also, all Stable-Baselines3 policies needed to reproduce the results from [1] are already provided with the
-code.</p>
+<div><p><strong><em>NOTE:</em></strong> We have experienced issues running Stable-Baselines3 within the Docker container with GPU acceleration enabled. When running the <code class="docutils literal notranslate"><span class="pre">train_SB3.py</span></code> script above, please run the Docker container without GPU acceleration or build the code from source. Also, all Stable-Baselines3 policies needed to reproduce the results from [1] are already provided with the code.</p>
 </div></blockquote>
 </section>
 <section id="overview-of-input-arguments">
@@ -657,7 +657,7 @@ Finally, <code class="docutils literal notranslate"><span class="pre">--no-exp_c
 </section>
 <section id="rebuilding-the-docker-container">
 <h1>8. Rebuilding the Docker container<a class="headerlink" href="#rebuilding-the-docker-container" title="Link to this heading"></a></h1>
-<p>The docker container (for AMD and X86 architectures) can be rebuilt from the source code by executing the following command in the root directory of the artifact (here, 1.0
+<p>The Docker container (for AMD and X86 architectures) can be rebuilt from the source code by executing the following command in the root directory of the artifact (here, 1.0
 indicates the version):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">build</span> <span class="o">--</span><span class="n">platform</span><span class="o">=</span><span class="n">linux</span><span class="o">/</span><span class="n">amd64</span> <span class="o">-</span><span class="n">f</span> <span class="n">Dockerfile</span> <span class="o">--</span><span class="n">tag</span> <span class="n">thombadings</span><span class="o">/</span><span class="n">lograsm</span><span class="p">:</span><span class="n">v1</span> <span class="o">.</span>
 </pre></div>

@@ -82,13 +82,14 @@
   <section id="documentation-for-the-lograsm-artifact">
 <h1>Documentation for the logRASM artifact<a class="headerlink" href="#documentation-for-the-lograsm-artifact" title="Link to this heading"></a></h1>
 <p>This repository contains the supplementary code for the paper:</p>
-<p><em>Policy Verification in Stochastic Dynamical Systems Using Logarithmic Neural Certificates by Thom Badings, Wietze Koops, Sebastian
+<p><em>`Policy Verification in Stochastic Dynamical Systems Using Logarithmic Neural Certificates`&lt;https://doi.org/10.48550/arXiv.2406.00826&gt; by Thom Badings, Wietze Koops, Sebastian
 Junges, and Nils Jansen (CAV 2025)</em></p>
 <p>This paper proposes techniques that make the verification of neural network policies in stochastic dynamical systems more scalable.
 In this artifact, we implement these techniques in a learner-verifier framework for verifying that a given neural network policy satisfies a given reach-avoid specification.
 The learner trains another neural network, which acts as a certificate proving that the policy satisfies the task.
 The verifier then checks whether this neural network certificate is a so-called logarithmic reach-avoid supermartingale (logRASM), which suffices to show reach-avoid guarantees.
 For more details about the approach, we refer to the paper above.</p>
+<p>Source code on GitHub: <a class="reference external" href="https://github.com/LAVA-LAB/logRASM">https://github.com/LAVA-LAB/logRASM</a></p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>

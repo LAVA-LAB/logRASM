@@ -110,6 +110,9 @@
 <div class="viewcode-block" id="Simulator">
 <a class="viewcode-back" href="../validate_certificate.html#validate_certificate.Simulator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Simulator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Monte Carlo simulator for the reach-avoid specification.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">Policy_state</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">init_space</span><span class="p">,</span> <span class="n">xInits</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
 
@@ -283,13 +286,17 @@
 <a class="viewcode-back" href="../validate_certificate.html#validate_certificate.loss_exp_decrease">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">loss_exp_decrease</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">exp_certificate</span><span class="p">,</span> <span class="n">V_state</span><span class="p">,</span> <span class="n">V_params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">noise_key</span><span class="p">,</span> <span class="n">probability_bound</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Compute loss related to condition 2 (expected decrease).</span>
-<span class="sd">    :param V_state:</span>
-<span class="sd">    :param V_params:</span>
-<span class="sd">    :param x:</span>
-<span class="sd">    :param u:</span>
-<span class="sd">    :param noise:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    Compute expected decrease condition</span>
+
+<span class="sd">    :param env: Environment.</span>
+<span class="sd">    :param exp_certificate: True if logRASM is used.</span>
+<span class="sd">    :param V_state: Certificate neural network.</span>
+<span class="sd">    :param V_params: Certificate neural network parameters.</span>
+<span class="sd">    :param x: State.</span>
+<span class="sd">    :param u: Control input.</span>
+<span class="sd">    :param noise_key: Key of the random number generator.</span>
+<span class="sd">    :param probability_bound: The probability bound of the specification that we aim to certify.</span>
+<span class="sd">    :return: Expected decrease</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="c1"># For each given noise_key, compute the successor state for the pair (x,u)</span>
@@ -314,6 +321,21 @@
 <a class="viewcode-back" href="../validate_certificate.html#validate_certificate.validate_RASM">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">validate_RASM</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">cell_width</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">forward_pass_batch_size</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span>
                   <span class="n">expected_decrease_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_traces</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">plot_RASM</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_latex_text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validate_conditions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Validate the given (log)RASM by discretizing the state space and computing the expected decrease condition empirically.</span>
+
+<span class="sd">    :param checkpoint_path: Path to load checkpoint from.</span>
+<span class="sd">    :param cell_width: Discretization cell width.</span>
+<span class="sd">    :param batch_size: Batch size to use for computing the expected decrease condition.</span>
+<span class="sd">    :param forward_pass_batch_size: Batch size to use for forward passes.</span>
+<span class="sd">    :param expected_decrease_samples: Number of samples to use for computing the expected decrease condition in each grid point.</span>
+<span class="sd">    :param seed: Random seed.</span>
+<span class="sd">    :param num_traces: Number of Monte Carlo simulations to run.</span>
+<span class="sd">    :param plot_RASM: If True, plot the (log)RASM.</span>
+<span class="sd">    :param plot_latex_text: If True, use LaTeX for plotting.</span>
+<span class="sd">    :param validate_conditions: If True, validate the certificate conditions empirically.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;- Validate checkpoint in folder &quot;</span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
 
     <span class="n">test</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.5096874987</span><span class="p">,</span> <span class="mf">6.30985987</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -536,6 +558,9 @@
 <span class="c1"># %%</span>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Empirically validate learned (log)RASMs for all checkpoints in the given folder, or for a single specified checkpoint.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prefix_chars</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
 

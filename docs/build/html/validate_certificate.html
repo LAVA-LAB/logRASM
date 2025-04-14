@@ -53,15 +53,9 @@
 <li class="toctree-l1"><a class="reference internal" href="ReadMe.html#overview-of-input-arguments">7. Overview of input arguments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ReadMe.html#rebuilding-the-docker-container">8. Rebuilding the Docker container</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">Code documentation</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="LipBaB.html">LipBaB module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="LipBaB_finalcheckpoint.html">LipBaB_finalcheckpoint module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="LipBaB_interpret_results.html">LipBaB_interpret_results module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="collect_checkpoints.html">collect_checkpoints module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="core.html">core package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="main_genOtherSeeds.html">main_genOtherSeeds module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html">models package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="run.html">run module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="table_generator.html">table_generator module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="train_SB3.html">train_SB3 module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">validate_certificate module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#validate_certificate.Simulator"><code class="docutils literal notranslate"><span class="pre">Simulator</span></code></a><ul>
@@ -116,6 +110,7 @@
 <dt class="sig sig-object py" id="validate_certificate.Simulator">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">validate_certificate.</span></span><span class="sig-name descname"><span class="pre">Simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Policy_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xInits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/validate_certificate.html#Simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#validate_certificate.Simulator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Monte Carlo simulator for the reach-avoid specification.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="validate_certificate.Simulator.check_in_state_space">
 <span class="sig-name descname"><span class="pre">check_in_state_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/validate_certificate.html#Simulator.check_in_state_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#validate_certificate.Simulator.check_in_state_space" title="Link to this definition"></a></dt>
@@ -162,13 +157,24 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="validate_certificate.loss_exp_decrease">
 <span class="sig-prename descclassname"><span class="pre">validate_certificate.</span></span><span class="sig-name descname"><span class="pre">loss_exp_decrease</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_certificate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">probability_bound</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/validate_certificate.html#loss_exp_decrease"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#validate_certificate.loss_exp_decrease" title="Link to this definition"></a></dt>
-<dd><p>Compute loss related to condition 2 (expected decrease).
-:param V_state:
-:param V_params:
-:param x:
-:param u:
-:param noise:
-:return:</p>
+<dd><p>Compute expected decrease condition</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – Environment.</p></li>
+<li><p><strong>exp_certificate</strong> – True if logRASM is used.</p></li>
+<li><p><strong>V_state</strong> – Certificate neural network.</p></li>
+<li><p><strong>V_params</strong> – Certificate neural network parameters.</p></li>
+<li><p><strong>x</strong> – State.</p></li>
+<li><p><strong>u</strong> – Control input.</p></li>
+<li><p><strong>noise_key</strong> – Key of the random number generator.</p></li>
+<li><p><strong>probability_bound</strong> – The probability bound of the specification that we aim to certify.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Expected decrease</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -177,20 +183,60 @@
 <dd><p>Vectorized version of loss_exp_decrease. Takes similar arguments as loss_exp_decrease but with additional array axes over which loss_exp_decrease is mapped.</p>
 <p>Original documentation:</p>
 <blockquote>
-<div><p>Compute loss related to condition 2 (expected decrease).
-:param V_state:
-:param V_params:
-:param x:
-:param u:
-:param noise:
-:return:</p>
+<div><p>Compute expected decrease condition</p>
+<dl class="field-list simple">
+<dt class="field-odd">param env<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Environment.</p>
+</dd>
+<dt class="field-even">param exp_certificate<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if logRASM is used.</p>
+</dd>
+<dt class="field-odd">param V_state<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Certificate neural network.</p>
+</dd>
+<dt class="field-even">param V_params<span class="colon">:</span></dt>
+<dd class="field-even"><p>Certificate neural network parameters.</p>
+</dd>
+<dt class="field-odd">param x<span class="colon">:</span></dt>
+<dd class="field-odd"><p>State.</p>
+</dd>
+<dt class="field-even">param u<span class="colon">:</span></dt>
+<dd class="field-even"><p>Control input.</p>
+</dd>
+<dt class="field-odd">param noise_key<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Key of the random number generator.</p>
+</dd>
+<dt class="field-even">param probability_bound<span class="colon">:</span></dt>
+<dd class="field-even"><p>The probability bound of the specification that we aim to certify.</p>
+</dd>
+<dt class="field-odd">return<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Expected decrease</p>
+</dd>
+</dl>
 </div></blockquote>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="validate_certificate.validate_RASM">
 <span class="sig-prename descclassname"><span class="pre">validate_certificate.</span></span><span class="sig-name descname"><span class="pre">validate_RASM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward_pass_batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_decrease_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_traces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_RASM</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_latex_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/validate_certificate.html#validate_RASM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#validate_certificate.validate_RASM" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Validate the given (log)RASM by discretizing the state space and computing the expected decrease condition empirically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint_path</strong> – Path to load checkpoint from.</p></li>
+<li><p><strong>cell_width</strong> – Discretization cell width.</p></li>
+<li><p><strong>batch_size</strong> – Batch size to use for computing the expected decrease condition.</p></li>
+<li><p><strong>forward_pass_batch_size</strong> – Batch size to use for forward passes.</p></li>
+<li><p><strong>expected_decrease_samples</strong> – Number of samples to use for computing the expected decrease condition in each grid point.</p></li>
+<li><p><strong>seed</strong> – Random seed.</p></li>
+<li><p><strong>num_traces</strong> – Number of Monte Carlo simulations to run.</p></li>
+<li><p><strong>plot_RASM</strong> – If True, plot the (log)RASM.</p></li>
+<li><p><strong>plot_latex_text</strong> – If True, use LaTeX for plotting.</p></li>
+<li><p><strong>validate_conditions</strong> – If True, validate the certificate conditions empirically.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="validate_certificate.validate_all">
