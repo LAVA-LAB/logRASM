@@ -1,5 +1,5 @@
 # This file contains an implementation of LipBaB, an anytime algorithm for computing upper bounds on Lipschitz
-# constants for neural networks. The file is obtained from https://github.com/pyrobits/LipBaB.
+# constants for neural networks. The file is obtained from https://github.com/pyrobits/LipBaB (with minor edits).
 # We use LipBaB to compare the Lipschitz constants that we compute using our techniques.
 
 import time

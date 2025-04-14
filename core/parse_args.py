@@ -209,11 +209,10 @@ def parse_arguments(linfty, datetime, cwd):
 
 def set_mesh_loss(args, env, recommended_tauK=0.1):
     """
-    Set the mesh / tau for the learner loss function, either based on the specified tau*K value or the value of tau
-    directly
+    Set the mesh / tau for the learner loss function, either based on the specified tau*K value or the value of tau directly
 
-    :param args:
-    :param env:
+    :param args: Command line arguments given. 
+    :param env: Environment.
     """
 
     MIN_MESH = 0.00001

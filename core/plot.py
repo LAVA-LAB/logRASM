@@ -15,12 +15,14 @@ from core.commons import MultiRectangularSet
 
 def position_fraction(point, lb, ub):
     '''
-    Calculate the fraction at which the given point is, within the box [lb, ub]. For example, the point point=0.5 is at a fraction of 0.95 within [-1.4, 0.6].
+    Calculate the relative position at which the given point is, within the box [lb, ub]. 
+    For example, the point point=0.5 is at a fraction of 0.95 within [-1.4, 0.6].
+    Note that the answer is between 0 and 1 if and only if the point is inside [lb, ub].
 
-    :param point:
-    :param lb:
-    :param ub:
-    :return:
+    :param point: Float, the input point. 
+    :param lb: Float, the input lower bound. 
+    :param ub: Float, the input upper bound. 
+    :return: Float, the relative position of point in the box [lb, ub].
     '''
 
     return (point - lb) / (ub - lb)
@@ -28,13 +30,14 @@ def position_fraction(point, lb, ub):
 
 def position_in_heatmap(point, lb, ub, heatmap_size):
     '''
-    Calculate where the given point is located in a heatmap. Note that in a heatmap, the upper left corner is (0,0), while in normal plots, the bottom left corner is (0,0).
+    Calculate where the given point is located in a heatmap. 
+    Note that in a heatmap, the upper left corner is (0,0), while in normal plots, the bottom left corner is (0,0).
 
-    :param point:
-    :param lb:
-    :param ub:
-    :param heatmap_size:
-    :return:
+    :param point: Float, the input point. 
+    :param lb: Float, the input lower bound. 
+    :param ub: Float, the input upper bound. 
+    :param heatmap_size: The upper limits of the heatmap.
+    :return: The position on the heatmap. 
     '''
 
     fraction = position_fraction(point, lb, ub)
@@ -48,13 +51,12 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
     '''
     Plot the target, initial, and unsafe state sets.
 
-    :param env:
-    :param ax:
-    :param plot_dimensions:
-    :param labels:
-    :param latex:
-    :param size:
-    :return:
+    :param env: Environment
+    :param ax: A matplotlib figure.
+    :param plot_dimensions: List of length two, mentioning which of the dimensions of the state space to plot. 
+    :param labels: boolean. If true, add labels to the axes.
+    :param latex: boolean. If true, use LaTeX for the labels of the axes. 
+    :param size: integer. Size of the axis labels. 
     '''
 
     lsize = size + 4
@@ -141,15 +143,15 @@ def plot_traces(env, Policy_state, key, num_traces=10, len_traces=1000, folder=F
     '''
     Plot simulated traces under the given policy.
 
-    :param env:
-    :param Policy_state:
-    :param key:
-    :param num_traces:
-    :param len_traces:
-    :param folder:
-    :param filename:
-    :param title:
-    :return:
+    :param env: Environment. 
+    :param Policy_state: Policy network.
+    :param key: random number generator key. 
+    :param num_traces: Number of traces to be plotted. 
+    :param len_traces: Number of environment steps done per trace.
+    :param folder: boolean or string. If not false, should be the pathname of the folder where to save the plot. 
+    :param filename: boolean or string. If not false, should be the filename on which the plot should be saved. 
+    :param title: boolean. If true, add a title. 
+    :return: Numpy array containing the traces. 
     '''
 
     plot_dim = env.plot_dim
@@ -257,13 +259,12 @@ def plot_dataset(env, train_data=None, additional_data=None, folder=False, filen
     '''
     Plot the given samples.
 
-    :param env:
-    :param train_data:
-    :param additional_data:
-    :param folder:
-    :param filename:
-    :param title:
-    :return:
+    :param env: Environment.
+    :param train_data: Data points used in the training, to be plotted in black.
+    :param additional_data: Additional data, to be plotted in blue (used for, e.g., counterexamples or hard violations). 
+    :param folder: boolean or string. If not false, should be the pathname of the folder where to save the plot. 
+    :param filename: boolean or string. If not false, should be the filename on which the plot should be saved. 
+    :param title: boolean. If true, add a title. 
     '''
 
     plot_dim = env.plot_dim
@@ -318,14 +319,13 @@ def vector_plot(env, Pi_state, vectors_per_dim=40, seed=1, folder=False, filenam
     '''
     Create vector plot of the closed-loop dynamics under the given policy
 
-    :param env:
-    :param Pi_state:
-    :param vectors_per_dim:
-    :param seed:
-    :param folder:
-    :param filename:
-    :param title:
-    :return:
+    :param env: Environment. 
+    :param Pi_state: Policy network.
+    :param vectors_per_dim: Number of vectors in the vector plot in each dimension. 
+    :param seed: Seed used for computing the next state.
+    :param folder: boolean or string. If not false, should be the pathname of the folder where to save the plot. 
+    :param filename: boolean or string. If not false, should be the filename on which the plot should be saved. 
+    :param title: boolean. If true, add a title. 
     '''
 
     plot_dim = env.plot_dim
@@ -389,13 +389,12 @@ def plot_layout(env, folder=False, filename=False, title=True, latex=False, size
     '''
     Plot the layout of the reach-avoid specification.
 
-    :param env:
-    :param folder:
-    :param filename:
-    :param title:
-    :param latex:
-    :param size:
-    :return:
+    :param env: Environment. 
+    :param folder: boolean or string. If not false, should be the pathname of the folder where to save the plot. 
+    :param filename: boolean or string. If not false, should be the filename on which the plot should be saved. 
+    :param title: boolean. If true, add a title. 
+    :param latex: boolean. If true, use LaTeX for the labels of the axes. 
+    :param size: integer. Size of the axis labels. 
     '''
 
     if latex:
@@ -455,18 +454,17 @@ def plot_certificate_2D(env, cert_state, folder=False, filename=False, logscale=
     '''
     Plot the given RASM as a 2D heatmap.
 
-    :param env:
-    :param cert_state:
-    :param folder:
-    :param filename:
-    :param logscale:
-    :param title:
-    :param labels:
-    :param resolution:
-    :param latex:
-    :param size:
-    :param contour:
-    :return:
+    :param env: Environment. 
+    :param cert_state: Certificate network.
+    :param folder: boolean or string. If not false, should be the pathname of the folder where to save the plot. 
+    :param filename: boolean or string. If not false, should be the filename on which the plot should be saved. 
+    :param logscale: boolean. If true, use a logarithmic scale. 
+    :param title: boolean. If true, add a title. 
+    :param labels: boolean. If true, add labels to the axes.
+    :param resolution: integer. Number of points used for the heatmap in each dimension. 
+    :param latex: boolean. If true, use LaTeX for the labels of the axes. 
+    :param size: integer. Size of the axis labels. 
+    :param contour: boolean. If true, plot contour lines.
     '''
 
     if latex:
@@ -648,14 +646,13 @@ def plot_heatmap(env, coordinates, values, folder=False, filename=False, title=T
     '''
     Generitc function to plot a heatmap for the given coordinates and values.
 
-    :param env:
-    :param coordinates:
-    :param values:
-    :param folder:
-    :param filename:
-    :param title:
-    :param size:
-    :return:
+    :param env: Environment. 
+    :param coordinates: List of coordinates for which a value is given.
+    :param values: List of the values corresponding to the coordinates.
+    :param folder: boolean or string. If not false, should be the pathname of the folder where to save the plot. 
+    :param filename: boolean or string. If not false, should be the filename on which the plot should be saved. 
+    :param title: boolean. If true, add a title. 
+    :param size: integer. Size of the axis labels. 
     '''
 
     plot_dim = env.plot_dim

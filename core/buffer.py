@@ -5,14 +5,14 @@ import numpy as np
 
 class Buffer:
     '''
-    Class to store samples in a buffer.
+    Class to store samples (from the state space) in a buffer.
     '''
 
     def __init__(self, dim, extra_dims=0, max_size=100_000_000):
         '''
-        :param dim: The length (i.e., dimension) of each sample
-        :param extra_dims: The number of extra dimensions that are added to the samples, to store extra data
-        :param max_size: Maximize size of the buffer
+        :param dim: integer, the length (i.e., dimension) of each sample.
+        :param extra_dims: integer, the number of extra dimensions that are added to the samples, to store extra data.
+        :param max_size: integer, the maximal size of the buffer.
         '''
         self.dim = dim
         self.extra_dims = extra_dims
@@ -23,8 +23,7 @@ class Buffer:
         '''
         Append given samples to training buffer
 
-        :param samples:
-        :return:
+        :param samples: numpy array containing the samples to append.
         '''
 
         assert samples.shape[1] == self.dim + self.extra_dims, \
@@ -37,15 +36,14 @@ class Buffer:
 
     def append_and_remove(self, refresh_fraction, samples, perturb=False, cell_width=False, verbose=False, weighted_sampling=False):
         '''
-        Removes a given fraction of the training buffer and appends the given samples
+        Removes a given fraction of the training buffer and appends the given samples.
 
-        :param refresh_fraction: Fraction of the buffer to refresh
-        :param samples: Samples to append
-        :param perturb: If true, perturb each samples (within their cells; uniform distribution)
-        :param cell_width: Size of each cell
-        :param verbose: If true, print more
-        :param weighted_sampling: If true, refresh buffer according to the given weights
-        :return:
+        :param refresh_fraction: float, fraction of the buffer to refresh.
+        :param samples: numpy array containing the samples to append.
+        :param perturb: boolean. If true, perturb each samples (within their cells; uniform distribution).
+        :param cell_width: boolean or float. If a float, it is the size of each cell (only required if perturb is True).
+        :param verbose: boolean. If true, print more information.
+        :param weighted_sampling: boolean. If true, refresh buffer according to the given weights.
         '''
 
         assert samples.shape[1] == self.dim + self.extra_dims, \
@@ -60,6 +58,8 @@ class Buffer:
 
         if weighted_sampling:
 
+            # Samples store three nonnegative weights (one for each type of violation)
+            # The following line computes for how many samples at least one weight is positive
             nonzero_p = np.sum(np.sum(samples[:, self.dim:self.dim + 3], axis=1) > 0)
             if nr_new <= nonzero_p:
                 replace = False
@@ -109,10 +109,16 @@ class Buffer:
 def define_grid(low, high, size):
     '''
     Set rectangular grid over state space for neural network learning
+    Specifically, given lower and upper bounds low[i] and high[i] for each dimension, 
+    and the number of points size[i] for each dimension, creates the grid consisting
+    of all prod_i size[i] points whose ith coordinate can be written as
+      low[i] + j (high[i] - low[i])/(size[i]-1) 
+    for some 0 <= j <= size[i]-1 that can depend on i.
 
-    :param low: ndarray
-    :param high: ndarray
-    :param size: List of ints (entries per dimension)
+    :param low: List of floats (lower bound grid per dimension).
+    :param high: List of floats (upper bound grid per dimension).
+    :param size: List of ints (entries per dimension).
+    :return: Numpy array of size (prod_i size[i], len(size)), containing the points in the grid.
     '''
 
     points = [np.linspace(low[i], high[i], size[i]) for i in range(len(size))]
@@ -124,11 +130,14 @@ def define_grid(low, high, size):
 @jax.jit
 def meshgrid_jax(points, size):
     '''
-    Set rectangular grid over state space for neural network learning
+    Set rectangular grid over state space for neural network learning (using jax)
+    Specifically, given a list of points points[i] for each dimension, 
+    creates the grid consisting of all prod_i len(points[i]) points 
+    whose ith coordinate is an element of points[i] for all i.
 
-    :param low: ndarray
-    :param high: ndarray
-    :param size: List of ints (entries per dimension)
+    :param points: List of len(size) lists of floats (coordinates per dimension).
+    :param size: List of ints (entries per dimension).
+    :return: Jax numpy array of size (prod_i size[i], len(size)), containing the points in the grid.
     '''
 
     meshgrid = jnp.asarray(jnp.meshgrid(*points))
@@ -139,12 +148,18 @@ def meshgrid_jax(points, size):
 
 def define_grid_jax(low, high, size, mode='linspace'):
     '''
+    Set rectangular grid over state space for neural network learning (using jax)
+    Specifically, given lower and upper bounds low[i] and high[i] for each dimension, 
+    and the number of points size[i] for each dimension, creates the grid consisting
+    of all prod_i size[i] points whose ith coordinate can be written as
+      low[i] + j (high[i] - low[i])/(size[i]-1) 
+    for some 0 <= j <= size[i]-1 that can depend on i.
 
-    :param low: ndarray
-    :param high: ndarray
-    :param size: ndarray
-    :param mode:
-    :return:
+    :param low: List of floats (lower bound grid per dimension).
+    :param high: List of floats (upper bound grid per dimension).
+    :param size: List of ints (entries per dimension).
+    :param mode: Determines whether the numpy function linspace or arange is used.
+    :return: Jax numpy array of size (prod_i size[i], len(size)), containing the points in the grid.
     '''
 
     if mode == 'linspace':
@@ -159,12 +174,15 @@ def define_grid_jax(low, high, size, mode='linspace'):
 
 def mesh2cell_width(mesh, dim, Linfty):
     '''
-    Convert mesh size in L1 norm to cell width in a rectangular gridding
-
-    :param mesh:
-    :param dim:
-    :param Linfty:
-    :return:
+    Convert mesh size in L1 (or Linfty) norm to cell width in a rectangular gridding
+    Given the L1 or Linfty norm ||.||, computes the cell width of the largest 
+    axis-aligned rectangle inside a cell of the form {x : ||x-c|| <= mesh}, where c is
+    some fixed arbitary center (not required to be specified).
+    
+    :param mesh: float, the norm bound from the center of the cell.
+    :param dim: int, the dimension of the state space.
+    :param Linfty: boolean, whether the Linfty norm (rather than the L1 norm) should be used.
+    :return: float, the cell width of the cell.
     '''
 
     return mesh * 2 if Linfty else mesh * (2 / dim)
@@ -172,12 +190,15 @@ def mesh2cell_width(mesh, dim, Linfty):
 
 def cell_width2mesh(cell_width, dim, Linfty):
     '''
-    Convert mesh size in L1 norm to cell width in a rectangular gridding
+    Convert cell width in L1 norm to mesh size in a rectangular gridding
+    Given the L1 or Linfty norm ||.||, computes the largest mesh such that a 
+    axis-aligned rectangle with given cell_width and center c (not specified)
+    contains the set {x : ||x-c|| <= mesh}.
 
-    :param cell_width:
-    :param dim:
-    :param Linfty:
-    :return:
+    :param cell_width: float, cell width of the cell.
+    :param dim: int, dimension of the state space.
+    :param Linfty: boolean, whether the Linfty norm (rather than the L1 norm) should be used.
+    :return: float, the norm bound from the center of the cell.
     '''
 
     return cell_width / 2 if Linfty else cell_width * (dim / 2)

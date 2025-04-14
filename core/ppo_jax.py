@@ -74,10 +74,10 @@ class PPOargs:
 
 class AgentState(TrainState):
     '''
+    Class inherited from the TrainState class from flax. 
+    It sets default values for agent functions to make TrainState work in jitted function.
+    '''    
 
-    '''
-
-    # Setting default values for agent functions to make TrainState work in jitted function
     actor_fn: Callable = struct.field(pytree_node=False)
     critic_fn: Callable = struct.field(pytree_node=False)
 
@@ -85,7 +85,7 @@ class AgentState(TrainState):
 @flax.struct.dataclass
 class AgentParams:
     '''
-
+    Class storing parameters for the PPO actor-critic. 
     '''
 
     actor_params: {}
@@ -95,7 +95,7 @@ class AgentParams:
 @flax.struct.dataclass
 class Storage:
     '''
-
+    Class storing data collected in episodes (rollouts/simulations in the environment).
     '''
 
     obs: jnp.array
@@ -111,7 +111,7 @@ class Storage:
 @flax.struct.dataclass
 class EpisodeStatistics:
     '''
-
+    Class storing statistics of the episode.
     '''
 
     episode_returns: jnp.array
@@ -122,7 +122,7 @@ class EpisodeStatistics:
 
 class Actor(nn.Module):
     '''
-
+    Actor class.
     '''
 
     action_shape_prod: int
@@ -132,9 +132,12 @@ class Actor(nn.Module):
     @nn.compact
     def __call__(self, x: Array):
         '''
+        Apply the Actor network.
 
-        :param x:
+        :param x: State.
         :return:
+           - action_mean: Next state according to the Actor network. 
+           - action_logstd: Standard deviation of the normal distribution from which the action will be sampled.
         '''
 
         fnn = []
@@ -152,7 +155,7 @@ class Actor(nn.Module):
 
 class Critic(nn.Module):
     '''
-
+    Critic class.
     '''
 
     neurons_per_layer: list
@@ -161,9 +164,10 @@ class Critic(nn.Module):
     @nn.compact
     def __call__(self, x: Array):
         '''
+        Apply the Critic network.
 
-        :param x:
-        :return:
+        :param x: State.
+        :return: Next state according to the Critic network. 
         '''
 
         fnn = []
@@ -176,14 +180,14 @@ class Critic(nn.Module):
         return nn.Sequential(fnn + [linear_layer_init(1, std=1.0)])(x)
 
 
-# Helper function to quickly declare linear layer with weight and bias initializers
 def linear_layer_init(features, std=np.sqrt(2), bias_const=0.0):
     '''
+    Helper function to quickly declare linear layer with weight and bias initializers.
 
-    :param features:
-    :param std:
-    :param bias_const:
-    :return:
+    :param features: Number of neurons. 
+    :param std: Scale for the orthogonal matrix initializers.
+    :param bias_const: Initialization for the bias. 
+    :return: Linear neural network layer.
     '''
 
     layer = nn.Dense(features=features, kernel_init=nn.initializers.orthogonal(std),
@@ -199,12 +203,16 @@ def get_action_and_value2(
         action: np.ndarray
 ):
     '''
+    Construct action distribution and return some statistics and the value.
 
-    :param agent_state:
-    :param params:
-    :param obs:
-    :param action:
+    :param agent_state: AgentState (flax TrainState) object.
+    :param params: Parameters of the actor and critic networks.
+    :param obs: Input observation. 
+    :param action: Input action. 
     :return:
+       - Summed log probabilities corresponding to the action probabilities. 
+       - Summed entropies corresponding to the action probabilities. 
+       - Values provided by the critic. 
     '''
 
     action_mean, action_logstd = agent_state.actor_fn(params['actor'], obs)
@@ -225,14 +233,18 @@ def get_action_and_value(agent_state: AgentState, next_obs: np.ndarray, next_don
                          step: int,
                          key: jax.Array):
     '''
+    Sample an action and update storage.
 
-    :param agent_state:
-    :param next_obs:
-    :param next_done:
-    :param storage:
-    :param step:
-    :param key:
+    :param agent_state: AgentState (flax TrainState) object.
+    :param next_obs: Next observation.
+    :param next_done: 1 if this is the last step in the episode, 0 otherwise.
+    :param storage: Storage storing data collected in episodes.
+    :param step: Index of the step used to update the storage. 
+    :param key: random number generator key
     :return:
+       - storage: Updated storage.
+       - action: Sampled action.
+       - key: random number generator key
     '''
 
     action_mean, action_logstd = agent_state.actor_fn(jax.lax.stop_gradient(agent_state.params['actor']), next_obs)
@@ -267,26 +279,33 @@ def rollout_jax_jit(
         steps_since_reset: jax.Array,
 ):
     '''
+    Perform a rollout.  (jitted function)
 
-    :param env:
-    :param args:
-    :param agent_state:
-    :param next_obs:
-    :param next_done:
-    :param storage:
-    :param action_key:
-    :param env_key:
-    :param steps_since_reset:
+    :param env: Environment.
+    :param args: Parameters for the PPO pretraining. (Note: these can differ from the global command line arguments)
+    :param agent_state: AgentState (flax TrainState) object.
+    :param next_obs: Next observation.
+    :param next_done: 1 if this is the last step in the episode, 0 otherwise.
+    :param storage: Storage storing data collected in episodes.
+    :param action_key: random number generator key
+    :param env_key: random number generator key
+    :param steps_since_reset: Number of steps since the environment was reset. 
     :return:
+       - next_obs: Next observation.
+       - next_done: 1 if this is the last step in the episode, 0 otherwise.
+       - storage: Storage storing data collected in episodes.
+       - action_key: random number generator key.
+       - env_key: random number generator key.
     '''
 
     @jax.jit
     def rollout_body(i, val):
         '''
+        Helper function for rollout, used to allow JAX jitting. 
 
-        :param i:
-        :param val:
-        :return:
+        :param i: Step index.
+        :param val: tuple containing agent_state, next_obs, next_done, storage, action_key, env_key, steps_since_reset (as in rollout_jax_jit). 
+        :return: updated tuple containing agent_state, next_obs, next_done, storage, action_key, env_key, steps_since_reset
         '''
 
         step = i
@@ -321,17 +340,23 @@ def rollout_jax(
         steps_since_reset: jax.Array,
 ):
     '''
+    Perform a rollout.  (non-jitted function)    
 
-    :param env:
-    :param args:
-    :param agent_state:
-    :param next_obs:
-    :param next_done:
-    :param storage:
-    :param action_key:
-    :param env_key:
-    :param steps_since_reset:
+    :param env: Environment.
+    :param args: Parameters for the PPO pretraining. (Note: these can differ from the global command line arguments)
+    :param agent_state: AgentState (flax TrainState) object.
+    :param next_obs: Next observation.
+    :param next_done: 1 if this is the last step in the episode, 0 otherwise.
+    :param storage: Storage storing data collected in episodes.
+    :param action_key: random number generator key.
+    :param env_key: random number generator key.
+    :param steps_since_reset: Number of steps since the environment was reset. 
     :return:
+       - next_obs: Next observation.
+       - next_done: 1 if this is the last step in the episode, 0 otherwise.
+       - storage: Storage storing data collected in episodes.
+       - action_key: random number generator key.
+       - env_key: random number generator key.
     '''
 
     for step in range(0, args.num_steps):
@@ -349,10 +374,11 @@ def rollout_jax(
 @jax.jit
 def compute_gae_body(i, val):
     '''
+    Computes the Gradient Advantage Estimator (GAE).
 
-    :param i:
-    :param val:
-    :return:
+    :param i: number of remaining steps. 
+    :param val: tuple containing PPO arguments, data storage, and GAE.
+    :return: updated tuple containing PPO arguments, data storage and updated GAE.
     '''
 
     (args, storage, lastgaelam) = val
@@ -377,13 +403,14 @@ def compute_gae_jit(
         storage: Storage,
 ):
     '''
-
-    :param args:
-    :param agent_state:
-    :param next_obs:
-    :param next_done:
-    :param storage:
-    :return:
+    Computes the Gradient Advantage Estimator (GAE). (jitted function)
+    
+    :param args: Parameters for the PPO pretraining. (Note: these can differ from the global command line arguments)
+    :param agent_state: AgentState (flax TrainState) object.
+    :param next_obs: Next observation.
+    :param next_done: 1 if this is the last step in the episode, 0 otherwise.
+    :param storage: Storage storing data collected in episodes.
+    :return: Updated storage. 
     '''
 
     # Reset advantages values
@@ -419,13 +446,14 @@ def compute_gae(
         storage: Storage,
 ):
     '''
+    Computes the Gradient Advantage Estimator (GAE).
 
-    :param args:
-    :param agent_state:
-    :param next_obs:
-    :param next_done:
-    :param storage:
-    :return:
+    :param args: Parameters for the PPO pretraining. (Note: these can differ from the global command line arguments)
+    :param agent_state: AgentState (flax TrainState) object.
+    :param next_obs: Next observation.
+    :param next_done: 1 if this is the last step in the episode, 0 otherwise
+    :param storage: Storage storing data collected in episodes.
+    :return: Updated storage. 
     '''
 
     storage = storage.replace(advantages=storage.advantages.at[:].set(0.0))
@@ -455,13 +483,14 @@ def update_ppo_jit(
         key: jax.Array,
 ):
     '''
+    Update PPO agent to minimize the PPO loss. (jitted function)
 
-    :param env:
-    :param args:
-    :param agent_state:
-    :param storage:
-    :param max_policy_lipschitz:
-    :param key:
+    :param env: Environment.
+    :param args: Parameters for the PPO pretraining. (Note: these can differ from the global command line arguments)
+    :param agent_state: AgentState (flax TrainState) object.
+    :param storage: Storage storing data collected in episodes.
+    :param max_policy_lipschitz: Limit on the policy Lipschitz constant, above which a cost is incurred.
+    :param key: random number generator key
     :return:
     '''
 
@@ -527,10 +556,11 @@ def update_ppo_jit(
     @jax.jit
     def ppo_update_body(i, val):
         '''
+        Helper function for rollout, used to allow JAX jitting. 
 
-        :param i:
-        :param val:
-        :return:
+        :param i: step index
+        :param val: tuple containing agent_state and collected experiences 
+        :return: updated tuple containing agent_state and collected experiences 
         '''
 
         (agent_state,
@@ -628,14 +658,22 @@ def update_ppo(
         key: jax.Array,
 ):
     '''
+    Update PPO agent to minimize the PPO loss. 
 
-    :param env:
-    :param args:
-    :param agent_state:
-    :param storage:
-    :param max_policy_lipschitz:
-    :param key:
+    :param env: Environment.
+    :param args: Parameters for the PPO pretraining. (Note: these can differ from the global command line arguments)
+    :param agent_state: AgentState (flax TrainState) object.
+    :param storage: Storage storing data collected in episodes.
+    :param max_policy_lipschitz: Limit on the policy Lipschitz constant, above which a cost is incurred.
+    :param key: random number generator key
     :return:
+       - agent_state: AgentState object. 
+       - loss: total loss
+       - pg_loss: policy loss
+       - v_loss: value loss
+       - entropy_loss: entropy loss
+       - approx_kl: approximate KL divergence
+       - key: random number generator key
     '''
 
     # Flatten collected experiences
@@ -657,16 +695,19 @@ def update_ppo(
             val: np.ndarray,
     ):
         '''
+        Loss function for the PPO pretraining. 
 
-        :param agent_state:
-        :param params:
-        :param obs:
-        :param act:
-        :param logp:
-        :param adv:
-        :param ret:
-        :param val:
+        :param agent_state: AgentState (flax TrainState) object.
+        :param params: Parameters of the 
+        :param obs: Observation.
+        :param act: Action.
+        :param logp: Log probability. 
+        :param adv: List of advantages. 
+        :param ret: List of returns (rewards). 
+        :param val: List of values. 
         :return:
+           - total loss
+           - tuple containing the loss components
         '''
 
         newlogprob, entropy, newvalue = get_action_and_value2(agent_state, params, obs, act)
@@ -743,17 +784,21 @@ def PPO(env,
         activation_functions_txt=['relu', 'relu'],
         verbose=False):
     '''
+    Function for PPO pretraining of policies. 
 
-    :param env:
-    :param env_name:
-    :param cwd:
-    :param args:
-    :param max_policy_lipschitz:
-    :param neurons_per_layer:
-    :param activation_functions_jax:
-    :param activation_functions_txt:
-    :param verbose:
+    :param env: Environment.
+    :param env_name: string, the name of the environment.
+    :param cwd: Current working directory (used for saving the checkpoint). 
+    :param args: Parameters for the PPO pretraining. (Note: these can differ from the global command line arguments)
+    :param max_policy_lipschitz: Limit on the policy Lipschitz constant, above which a cost is incurred.
+    :param neurons_per_layer: List of ints, giving the number of neurons per layer. 
+    :param activation_functions_jax: List of flax activation functions. 
+    :param activation_functions_txt: List of strings, giving the name of the activation functions. 
+    :param verbose: If true, print more information. 
     :return:
+       - agent_state: AgentState object. 
+       - Policy_state: Policy network. 
+       - checkpoint_path: path to the saved checkpoint.
     '''
 
     max_policy_lipschitz = jnp.float32(max_policy_lipschitz)
@@ -775,9 +820,10 @@ def PPO(env,
     # Anneal learning rate over time
     def linear_schedule(count):
         '''
+        Anneal learning rate over time.
 
-        :param count:
-        :return:
+        :param count: Number of gradient updates performed so far.
+        :return: Annealled learning rate. 
         '''
 
         # anneal learning rate linearly after one training iteration which contains

@@ -12,15 +12,16 @@ from core.plot import plot_dataset
 
 class Learner:
     '''
-    Main learner class
+    Main learner class.
 
     '''
 
     def __init__(self, env, args):
         '''
+        Initialize the learner.
 
-        :param env:
-        :param args:
+        :param env: Environment. 
+        :param args: Command line arguments given. 
         '''
 
         self.env = env
@@ -100,14 +101,15 @@ class Learner:
 
     def loss_exp_decrease(self, V_state, V_params, x, u, noise_key, probability_bound):
         '''
-        Compute loss related to condition 2 (expected decrease).
-        :param V_state:
-        :param V_params:
-        :param x:
-        :param u:
-        :param noise_key:
-        :param probability_bound:
-        :return:
+        Compute expected certificate value in the new state for the loss related to condition 3 (expected decrease).
+        
+        :param V_state: Certificate neural network. 
+        :param V_params: Parameters of the certificate neural network. 
+        :param x: State.
+        :param u: Action.
+        :param noise_key: key of the random number generator.
+        :param probability_bound: The probability bound of the specification that we aim to certify.
+        :return: Expected certificate value in the new state.
         '''
 
         # For each given noise_key, compute the successor state for the pair (x,u)
@@ -121,7 +123,7 @@ class Learner:
                 jnp.minimum(V_state.apply_fn(V_params, state_new), jnp.log(2) - jnp.log(1 - probability_bound))
             )))
             # The jnp.minimum ensures that values do not become infinite (due to the exponential).
-            # Note that this only adds conservatism but retains the soundness.
+            # Note that this retains the soundness since we may cap any valid lograsm at - jnp.log(1 - probability_bound).
         else:
             V_expected = jnp.mean(
                 jnp.minimum(V_state.apply_fn(V_params, state_new), 2 / (1 - probability_bound))
@@ -140,15 +142,21 @@ class Learner:
                    expDecr_multiplier
                    ):
         '''
+        Perform one step of training the neural network.
 
-        :param key:
-        :param V_state:
-        :param Policy_state:
-        :param counterexamples:
-        :param mesh_loss:
-        :param probability_bound:
-        :param expDecr_multiplier:
+        :param key: key of the random number generator.
+        :param V_state: Certificate network.
+        :param Policy_state: Policy network.
+        :param counterexamples: Current list of counterexamples.
+        :param mesh_loss: float, determining the largest mesh for which a loss of 0 implies that the condition is satisfied. 
+        :param probability_bound: The probability bound of the specification that we aim to certify. 
+        :param expDecr_multiplier: Multiplier of the expected decrease loss. 
         :return:
+           - V_grads: Gradients of the certificate network. 
+           - Policy_grads: Gradients of the policy network. 
+           - infos: Dictionary, giving the total loss as well as each component (total, init, unsafe, expDecrease_mean, expDecrease_max (not used), Lipschitz (not used)).
+           - key: key of the random number generator.
+           - samples_in_batch: Dictionary, giving the samples used in the batch per category. 
         '''
 
         # Generate all random keys
@@ -361,11 +369,11 @@ class Learner:
 
     def debug_train_step(self, args, samples_in_batch, iteration):
         '''
+        Debug function for the training. 
 
-        :param args:
-        :param samples_in_batch:
-        :param iteration:
-        :return:
+        :param args: Command line arguments given. 
+        :param samples_in_batch: Dictionary, giving the samples used in the batch per category. 
+        :param iteration: Number of the CEGIS iteration.
         '''
 
         samples_in_batch['decrease'] = samples_in_batch['decrease'][samples_in_batch['decrease_not_in_target']]

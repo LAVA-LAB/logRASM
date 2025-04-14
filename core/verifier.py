@@ -23,12 +23,13 @@ os.environ["TF_CUDNN DETERMINISTIC"] = "1"
 @jax.jit
 def grid_multiply_shift(grid, lb, ub, num):
     '''
+    Split a cell into num cells per dimension by shifting and scaling an existing partitioned grid. 
 
-    :param grid:
-    :param lb:
-    :param ub:
-    :param num:
-    :return:
+    :param grid: Grid partitioning cell into num cells in each dimension. 
+    :param lb: Lower bound of the cell.
+    :param ub: Upper bound of the cell.
+    :param num: Number of cells into which the cell should be split. 
+    :return: Shifted and scaled grid. 
     '''
 
     multiply_factor = (ub - lb) / 2
@@ -47,12 +48,12 @@ def batched_forward_pass(apply_fn, params, samples, out_dim, batch_size):
     '''
     Do a forward pass for the given network, split into batches of given size (can be needed to avoid OOM errors).
 
-    :param apply_fn: Forward pass function of network
-    :param params: Parameters of network
-    :param samples: Samples to feed through the network
-    :param out_dim: Output dimension
-    :param batch_size: Batch size (integer)
-    :return: output
+    :param apply_fn: Forward pass function of network.
+    :param params: Parameters of network.
+    :param samples: Samples to feed through the network.
+    :param out_dim: Output dimension.
+    :param batch_size: Batch size (integer).
+    :return: output of the forward pass.
     '''
 
     if len(samples) <= batch_size:
@@ -111,8 +112,9 @@ class Verifier:
 
     def __init__(self, env):
         '''
+        Initialize the verifier.
 
-        :param env:
+        :param env: Environment.
         '''
 
         self.env = env
@@ -129,10 +131,10 @@ class Verifier:
 
     def partition_noise(self, env, args):
         '''
+        Discretize the noise space and compute corresponding probabilities.
 
-        :param env:
-        :param args:
-        :return:
+        :param env: Environment.
+        :param args: Command line arguments.
         '''
 
         # Discretize the noise space
@@ -149,11 +151,12 @@ class Verifier:
 
     def uniform_grid(self, env, mesh_size, Linfty, verbose=False):
         '''
-        Defines a rectangular gridding of the state space, used by the verifier
-        :param env: Gym environment object
-        :param mesh_size: This is the mesh size used to define the grid
-        :param Linfty: If true, use Linfty norm for gridding
-        :return:
+        Defines a rectangular gridding of the state space, used by the verifier.
+        
+        :param env: Environment. Gym environment object.
+        :param mesh_size: This is the mesh size used to define the grid.
+        :param Linfty: If true, use Linfty norm for gridding.
+        :return: Gridding of the state space.
         '''
 
         # Width of each cell in the partition. The grid points are the centers of the cells.
@@ -183,12 +186,12 @@ class Verifier:
         '''
         Refine the given array of points in the state space.
 
-        :param env:
-        :param data:
-        :param new_mesh_sizes:
-        :param Linfty:
-        :param vmap_threshold:
-        :return:
+        :param env: Environment.
+        :param data: Current centers and cell widths of cells in the grid. 
+        :param new_mesh_sizes: New cell widths per current cell.
+        :param Linfty: If true, use Linfty norm.
+        :param vmap_threshold: Treshold beyond which a jittable vmap is used for refinement. 
+        :return: Refined grid (as a stacked numpy array).
         '''
 
         if not self.args.silent:
@@ -287,8 +290,13 @@ class Verifier:
 
     def get_Lipschitz(self):
         '''
+        Compute the Lipschitz constants of the policy and certificate networks 
+        and the combined Lipschitz constant Kprime. 
 
         :return:
+           - lip_policy: Lipschitz constant of the policy network.
+           - lip_certificate: Lipschitz constant of the certificate network.
+           - Kprime: combined Lipschitz constant of x \mapsto V(f(x, pi(x), noise)).
         '''
 
         # Update Lipschitz coefficients
@@ -320,13 +328,20 @@ class Verifier:
 
     def check_and_refine(self, iteration, env, args, V_state, Policy_state):
         '''
+        Check the three supermartingale conditions, and refine the grid while not. 
 
-        :param iteration:
-        :param env:
-        :param args:
-        :param V_state:
-        :param Policy_state:
+        :param iteration: CEGIS iteration index.
+        :param env: Environment.
+        :param args: Command line arguments.
+        :param V_state: Certificate network.
+        :param Policy_state: Policy network. 
         :return:
+           - SAT : True if the check succeeded (possibly after refinements), and hence a supermartingale is learned. False otherwise. 
+           - counterx : Counterexamples to the RASM conditions. 
+           - counterx_weights : Counterexample weights per RASM condition. 
+           - counterx_hard : Boolean array, specifying whether the counterexample is hard. 
+           - total_samples_used : total number of samples used by the local refinement loop.
+           - total_samples_naive : number of sampled that would have been used by global refinement. 
         '''
 
         # Store new inputs
@@ -449,13 +464,19 @@ class Verifier:
 
     def check_expected_decrease(self, iteration, grid, Kprime, lip_certificate, compare_with_lip=False):
         '''
+        Check the expected decrease condition. 
 
-        :param iteration:
-        :param grid:
-        :param Kprime:
-        :param lip_certificate:
-        :param compare_with_lip:
-        :return:
+        :param iteration: CEGIS iteration index. 
+        :param grid: Verification grid. 
+        :param Kprime: Combined Lipschitz constant. 
+        :param lip_certificate: Lipschitz constant of the certificate network. 
+        :param compare_with_lip: Compare IBP and Lipschitz for the old state. (For the new state, Lipschitz is always used)
+        :return: 
+           - x_decrease_violations : list of violations of the expected decrease condition.
+           - len(hardViolations) : number of hard violations.
+           - violation_weights : list specifying the weight of each violation.
+           - hard_violation_idxs : boolean array, specifying which violations are hard. 
+           - suggested_mesh_expDecr : Suggested meshes for each violation.
         '''
 
         batch_size = self.args.forward_pass_batch_size
@@ -599,7 +620,7 @@ class Verifier:
                 Vxi = self.V_state.apply_fn(self.V_state.params, xi).flatten()
                 Vx1 = Vx_center_violations[hard_violation_idxs].flatten()
                 assert Vxi.shape == Vx1.shape
-                print('V[x_{k+2}] - V[x_{k}:')
+                print('V[x_{k+2}] - V[x_{k}]:')
                 print(Vxi - Vx1)
                 print(f'Number of hard violations left: {np.sum(Vxi - Vx1 > 0)}')
                 print('=========================\n')
@@ -640,12 +661,19 @@ class Verifier:
 
     def check_initial_states(self, grid, Kprime, lip_certificate, compare_with_lip=False):
         '''
+        Check the initial state condition. 
 
-        :param grid:
-        :param Kprime:
-        :param lip_certificate:
-        :param compare_with_lip:
+        :param grid: Verification grid. 
+        :param Kprime: Combined Lipschitz constant.
+        :param lip_certificate: Lipschitz constant of the certificate network. 
+        :param compare_with_lip: Compare IBP and Lipschitz.
         :return:
+           - x_init_vio_IBP : list of violations of the initial condition.
+           - x_init_vioNumHard : number of hard violations.
+           - weights_init : list specifying the weight of each violation.
+           - V_init > 0 : boolean array, specifying which violations are hard. 
+           - suggested_mesh_init : Suggested meshes for each violation.
+           - np.max(V_init_ub) if len(V_init_ub) > 0 else 0 : Maximal value among the (remaining) cells in the unsafe region. 
         '''
 
         batch_size = self.args.forward_pass_batch_size
@@ -729,12 +757,18 @@ class Verifier:
 
     def check_unsafe_state(self, grid, Kprime, lip_certificate, compare_with_lip=False):
         '''
+        Check the unsafe state condition. 
 
-        :param grid:
-        :param Kprime:
-        :param lip_certificate:
-        :param compare_with_lip:
+        :param grid: Verification grid. 
+        :param Kprime: Combined Lipschitz constant.
+        :param lip_certificate:  Lipschitz constant of the certificate network. 
+        :param compare_with_lip: Compare IBP and Lipschitz.
         :return:
+           - x_unsafe_vio_IBP : list of violations of the unsafe condition.
+           - x_unsafe_vioNumHard : number of hard violations.
+           - weights_unsafe : list specifying the weight of each violation.
+           - V_unsafe < 0 : boolean array, specifying which violations are hard. 
+           - suggested_mesh_unsafe : Suggested meshes for each violation.
         '''
 
         batch_size = self.args.forward_pass_batch_size
@@ -824,14 +858,14 @@ class Verifier:
         '''
         Compute expectation over V(x_{k+1}).
 
-        :param V_state:
-        :param V_params:
-        :param x:
-        :param u:
-        :param w_lb:
-        :param w_ub:
-        :param prob_ub:
-        :return:
+        :param V_state: Certificate network.
+        :param V_params: Parameters of the certificate network. 
+        :param x: State.
+        :param u: Action. 
+        :param w_lb: Noise lower bounds of the noise partition cells. 
+        :param w_ub: Noise upper bounds of the noise partition cells. 
+        :param prob_ub: Probabilities of the noise partition cells. 
+        :return: Upper bound on the expectation of V(x_{k+1}).
         '''
 
         # Next function makes a step for one (x,u) pair and a whole list of (w_lb, w_ub) pairs
@@ -852,14 +886,14 @@ class Verifier:
     @partial(jax.jit, static_argnums=(0,))
     def step_noise_batch(self, V_state, V_params, x, u, noise_key):
         '''
-        Approximate V(x_{k+1}) by taking the average over a set of noise values.
+        Approximate V(x_{k+1})-V(x_k) by taking the average over a set of noise values.
 
-        :param V_state:
-        :param V_params:
-        :param x:
-        :param u:
-        :param noise_key:
-        :return:
+        :param V_state: Certificate network.
+        :param V_params: Parameters of the certificate network. 
+        :param x: State.
+        :param u: Action. 
+        :param noise_key: random number generator key. 
+        :return: Approximation of V(x_{k+1})-V(x_k).
         '''
 
         state_new, noise_key = self.env.vstep_noise_batch(x, noise_key, u)
@@ -872,10 +906,12 @@ class Verifier:
         '''
         Refine the verification grid (either using local or uniform refinements).
 
-        :param cx:
-        :param suggested_mesh:
-        :param refine_nr:
-        :return:
+        :param cx: Counterexamples. 
+        :param suggested_mesh: Suggested mesh (per counterexample).
+        :param refine_nr: Number of completed refinements. 
+        :return: 
+           - refine: boolean, True if the refinement was executed.
+           - grid: the refined grid (or None, if refine is False).
         '''
 
         min_suggested_mesh = np.min(suggested_mesh)

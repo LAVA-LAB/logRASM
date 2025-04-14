@@ -9,13 +9,14 @@ from gymnasium import spaces
 
 class MultiRectangularSet:
     '''
-    Class to create a set of rectangular sets.
+    Class to create a list of rectangular sets.
     '''
 
     def __init__(self, sets):
         '''
-
-        :param sets:
+        Create a list of rectangular sets.
+        
+        :param sets: List of rectangular sets.
         '''
 
         self.sets = sets
@@ -23,16 +24,20 @@ class MultiRectangularSet:
         self.fix_dimensions = sets[0].fix_dimensions
 
     def get_volume(self):
+        '''
+        Computes the volume of the union of (disjoint) rectangular sets.
+        '''
         return np.sum([Set.volume for Set in self.sets])
 
     def contains(self, xvector, dim=-1, delta=0, return_indices=False):
         '''
+        Determine all points which are contained in the any of the rectangular sets.
 
-        :param xvector:
-        :param dim:
-        :param delta:
-        :param return_indices:
-        :return:
+        :param xvector: Numpy array of points.
+        :param dim: integer. If not -1, only consider the first dim columns of xvector (should be dimension of state space).
+        :param delta: float. Expand each rectangular set in each dimension by delta.
+        :param return_indices: boolean. If true, return the indices of the points in the vector (rather than the points themselves).
+        :return: (A boolean array indexing) the points contained in any of the rectangular sets.
         '''
 
         # Remove the extra columns from the data (storing additional data beyond the grid points)
@@ -55,10 +60,11 @@ class MultiRectangularSet:
     @partial(jax.jit, static_argnums=(0))
     def jax_contains(self, xvector, delta=0):
         '''
+        Determine all points which are contained in the any of the rectangular sets (jax version).
 
-        :param xvector:
-        :param delta:
-        :return:
+        :param xvector: Numpy array of points.
+        :param delta: float. Expand each rectangular set in each dimension by delta.
+        :return: A boolean array indexing the points contained in any of the rectangular sets.
         '''
 
         # bools[x] = 1 if x is contained in set
@@ -71,12 +77,13 @@ class MultiRectangularSet:
 
     def not_contains(self, xvector, dim=-1, delta=0, return_indices=False):
         '''
+         Determine all points which are *not* contained in the any of the rectangular sets.
 
-        :param xvector:
-        :param dim:
-        :param delta:
-        :param return_indices:
-        :return:
+        :param xvector: Numpy array of points.
+        :param dim: integer. If not -1, only consider the first dim columns of xvector (should be dimension of state space).
+        :param delta: float. Expand each rectangular set in each dimension by delta.
+        :param return_indices: boolean. If true, return the indices of the points in the vector (rather than the points themselves).
+        :return: (A boolean array indexing) the points *not* contained in any of the rectangular sets.
         '''
 
         # Remove the extra columns from the data (storing additional data beyond the grid points)
@@ -99,10 +106,11 @@ class MultiRectangularSet:
     @partial(jax.jit, static_argnums=(0))
     def jax_not_contains(self, xvector, delta=0):
         '''
+         Determine all points which are *not* contained in the any of the rectangular sets (jax version).
 
-        :param xvector:
-        :param delta:
-        :return:
+        :param xvector: Numpy array of points.
+        :param delta: float. Expand each rectangular set in each dimension by delta.
+        :return: A boolean array indexing the points *not* contained in any of the rectangular sets.
         '''
 
         # bools[x] = 1 if x is *not* contained in set
@@ -116,11 +124,12 @@ class MultiRectangularSet:
     @partial(jax.jit, static_argnums=(0, 2))
     def sample(self, rng, N, delta=0):
         '''
+        Sample points from each rectangular set.
 
-        :param rng:
-        :param N:
-        :param delta:
-        :return:
+        :param rng: random number generator object.
+        :param N: list, giving for each rectangular set the number of samples from that set.
+        :param delta: float. Expand each rectangular set in each dimension by delta.
+        :return: Jax Numpy array of samples from the rectangular sets.
         '''
 
         # Sample n values for each of the state sets and return the stacked vector
@@ -133,9 +142,10 @@ class MultiRectangularSet:
     @partial(jax.jit, static_argnums=(0))
     def sample_single(self, rng):
         '''
+        Sample a single point from a single randomly chosen set.
 
-        :param rng:
-        :return:
+        :param rng: random number generator object.
+        :return: jax array containing a single (random) point.
         '''
 
         # First determine from which initial state set to take a sample
@@ -157,11 +167,12 @@ class RectangularSet:
 
     def __init__(self, low, high, fix_dimensions=False, dtype=np.float32):
         '''
+        Initialize a rectangular set.
 
-        :param low:
-        :param high:
-        :param fix_dimensions:
-        :param dtype:
+        :param low: List of floats (lower bound set per dimension).
+        :param high: List of floats (upper bound set per dimension).
+        :param fix_dimensions: bool (False) or list of dimensions to be fixed (i.e., not expanded by delta).
+        :param dtype: the data type of the points.
         '''
 
         self.low = np.array(low, dtype=dtype)
@@ -178,20 +189,22 @@ class RectangularSet:
 
     def get_volume(self):
         '''
-
-        :return:
+        Returns the volume of the rectangular set. 
+        
+        :return: float, the volume of the set.
         '''
 
         return self.volume
 
     def contains(self, xvector, dim=-1, delta=0, return_indices=False):
         '''
-        Check if a vector of points is contained in the rectangular set, expanded by a value of delta.
+        Determine all points that are contained in the rectangular set, expanded by delta.
 
-        :param xvector: Vector of points.
-        :param dim: If not -1, only consider the first dim columns of xvector.
-        :param delta: Expand by this delta.
-        :return: List of booleans.
+        :param xvector: Numpy array of points.
+        :param dim: integer. If not -1, only consider the first dim columns of xvector (should be dimension of state space).
+        :param delta: float. Expand the rectangular set in each non-fixed dimension by delta.
+        :param return_indices: boolean. If true, return the indices of the points in the vector (rather than the points themselves).
+        :return: (A boolean array indexing) the points contained in the rectangular set.
         '''
 
         # Remove the extra columns from the data (storing additional data beyond the grid points)
@@ -215,10 +228,11 @@ class RectangularSet:
     @partial(jax.jit, static_argnums=(0,))
     def jax_contains(self, xvector, delta=0):
         '''
-        Check if a vector of points is contained in the rectangular set.
+        Determine all points that are contained in the rectangular set, expanded by delta (jax version). 
 
-        :param xvector: Vector of points.
-        :param delta: Expand by this delta.
+        :param xvector: Numpy array of points.
+        :param delta: float. Expand the rectangular set in each non-fixed dimension by delta.
+        :return: A boolean array indexing the points contained in the rectangular set.
         '''
 
         delta_dims = jnp.kron(delta, self.fix_dimensions.reshape(-1, 1)).T
@@ -229,12 +243,13 @@ class RectangularSet:
 
     def not_contains(self, xvector, dim=-1, delta=0, return_indices=False):
         '''
-        Check if a vector of points is *not* contained in the rectangular set, expanded by a value of delta.
+        Determine all points that are *not* contained in the rectangular set, expanded by a value of delta (jax version).
 
-        :param xvector: Vector of points.
-        :param dim: If not -1, only consider the first dim columns of xvector.
-        :param delta: Expand by this delta.
-        :return: List of booleans.
+        :param xvector: Numpy array of points.
+        :param dim: integer. If not -1, only consider the first dim columns of xvector (should be dimension of state space).
+        :param delta: float. Expand the rectangular set in each non-fixed dimension by delta.
+        :param return_indices: boolean. If true, return the indices of the points in the vector (rather than the points themselves).
+        :return: (A boolean array indexing) the points *not* contained in the rectangular set.
         '''
 
         # Remove the extra columns from the data (storing additional data beyond the grid points)
@@ -258,10 +273,11 @@ class RectangularSet:
     @partial(jax.jit, static_argnums=(0,))
     def jax_not_contains(self, xvector, delta=0):
         '''
-        Check if a vector of points is *not* contained in the rectangular set.
+        Determine all points that are *not* contained in the rectangular set (jax version).
 
-        :param xvector: Vector of points.
-        :param delta: Expand by this delta.
+        :param xvector: Numpy array of points.
+        :param delta: float. Expand the rectangular set in each non-fixed dimension by delta.
+        :return: A boolean array indexing the points *not* contained in the rectangular set.
         '''
 
         delta_dims = jnp.kron(delta, self.fix_dimensions.reshape(-1, 1)).T
@@ -275,14 +291,14 @@ class RectangularSet:
     @partial(jax.jit, static_argnums=(0, 2))
     def sample(self, rng, N, delta=0):
         '''
+        Uniformly sample N values from this rectangular state set.
 
-        :param rng:
-        :param N:
-        :param delta:
-        :return:
+        :param rng: random number generator object.
+        :param N: integer, the number of samples.
+        :param delta: float. Expand the rectangular set in each dimension by delta.
+        :return: Jax array containing the samples.
         '''
-
-        # Uniformly sample n values from this state set
+        
         samples = jax.random.uniform(rng, (N, self.dimension), minval=self.low - delta, maxval=self.high + delta)
 
         return samples
@@ -290,12 +306,12 @@ class RectangularSet:
     @partial(jax.jit, static_argnums=(0))
     def sample_single(self, rng):
         '''
+        Uniformly sample one value from this rectangular state set.
 
-        :param rng:
-        :return:
+        :param rng: random number generator object.
+        :return: Jax array containing the sample.
         '''
 
-        # Uniformly sample n values from this state set
         sample = jax.random.uniform(rng, (self.dimension,), minval=self.low, maxval=self.high)
 
         return sample

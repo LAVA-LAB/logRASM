@@ -12,9 +12,10 @@ class Logger:
 
     def __init__(self, output_folder, round_decimals=-1):
         '''
+        Initialize the logger class. 
 
-        :param output_folder:
-        :param round_decimals:
+        :param output_folder: path to the folder where the outputs are stored. 
+        :param round_decimals: Round decimal values to the specified number of places, or -1 for no rounding. 
         '''
 
         # Create output folder
@@ -43,8 +44,9 @@ class Logger:
 
     def export_args(self, args):
         '''
+        Exports all arguments to a csv file.
 
-        :param args:
+        :param args: Command line arguments given. 
         :return:
         '''
 
@@ -54,7 +56,7 @@ class Logger:
 
     def set_timer(self):
         '''
-        Store current time
+        Store current time.
         '''
 
         self.curr_time = time.time()
@@ -73,11 +75,11 @@ class Logger:
 
     def append_time(self, key, value, export=True):
         '''
+        Store and export timing statistics. 
 
-        :param key:
-        :param value:
-        :param export:
-        :return:
+        :param key: string (describing a part of the algorithm)
+        :param value: time spent in a part of the algorithm.
+        :param export: If True, export timings to a csv file.
         '''
 
         if self.round_decimals >= 0:
@@ -94,13 +96,13 @@ class Logger:
 
     def append_Lipschitz(self, Policy_state, V_state, iteration, silent, export=True):
         '''
+        Calculate and export Lipschitz constants of the policy and certificate networks. 
 
-        :param Policy_state:
-        :param V_state:
-        :param iteration:
-        :param silent:
-        :param export:
-        :return:
+        :param Policy_state: Policy neural network.
+        :param V_state: Certificate neural network.
+        :param iteration: Number of the CEGIS iteration.
+        :param silent: If False, Lipschitz constants are also printed to stdout. 
+        :param export: If True, export Lipschitz constants to a csv file. 
         '''
 
         t = time.time()
@@ -149,13 +151,15 @@ class Logger:
         return
 
     def export_times(self):
-
+        ''' Export times to csv '''
+        
         self.times_series = pd.Series(self.times, dtype=np.float32, name="time [s]")
         self.times_series.to_csv(self.times_path)
 
         return
 
     def export_Lipschitz(self):
+        ''' Export Lipschitz constants to csv '''
 
         self.Lipschitz_df.to_csv(self.Lipschitz_path)
 
@@ -188,6 +192,7 @@ class Logger:
         return
 
     def export_info(self):
+        ''' Export info to csv '''
 
         self.times_series = pd.Series(self.info, name="info")
         self.times_series.to_csv(self.info_path)

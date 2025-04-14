@@ -14,10 +14,11 @@ from flax.training.train_state import TrainState
 
 def load_policy_config(checkpoint_path, key):
     '''
+    Load the configuration of a saved neural network checkpoint.
 
-    :param checkpoint_path:
-    :param key:
-    :return:
+    :param checkpoint_path: file path to a Orbax checkpoint file.
+    :param key: string 'V_config' or 'Policy_config', describing whether the certificate or the policy should be loaded. 
+    :return: dictionary, giving the relevant configuration.
     '''
 
     # First read only the config from the orbax checkpoint
@@ -31,19 +32,20 @@ def load_policy_config(checkpoint_path, key):
 def create_nn_states(env, Policy_config, V_neurons_withOut, V_act_fn_withOut, pi_neurons_per_layer,
                      Policy_lr=5e-5, V_lr=5e-4):
     '''
-    Create Jax state objects (for both policy and certificate)
+    Create Jax state objects (for both policy and certificate).
 
-    :param env: Benchmark model
-    :param Policy_config: Configuration for policy
-    :param V_neurons_withOut: Number of neurons per layer of certificate network (including the output dimension)
-    :param V_act_fn_withOut: Activation function per layer of certificate network (including the output act. func.)
-    :param pi_neurons_per_layer: Number of neurons per layer of policy network (including the output dimension)
-    :param Policy_lr:
-    :param V_lr:
+    :param env: Benchmark model.
+    :param Policy_config: Configuration for policy.
+    :param V_neurons_withOut: Number of neurons per layer of certificate network (including the output dimension).
+    :param V_act_fn_withOut: Activation function per layer of certificate network (including the output act. func.).
+    :param pi_neurons_per_layer: Number of neurons per layer of policy network (excluding the output dimension).
+    :param Policy_lr: Policy network learning rate. 
+    :param V_lr: Certificate learning rate.
     :return:
-        - V_state
-        - Policy_state
-        - Policy_config
+        - V_state: Initialized certificate network 
+        - Policy_state: Initialized policy network
+        - Policy_config: Configuration for policy.
+        - Policy_neurons_withOut: Number of neurons per layer of policy network (including the output dimension).
     '''
 
     # Initialize certificate network
@@ -76,16 +78,17 @@ def create_nn_states(env, Policy_config, V_neurons_withOut, V_act_fn_withOut, pi
 def orbax_set_config(start_datetime=None, env_name=None, layout=None, seed=None, RL_method=None, total_steps=None,
                      neurons_per_layer=None, activation_fn_txt=None):
     '''
+    Set configuration of Orbax neural network checkpoint. 
 
-    :param start_datetime:
-    :param env_name:
-    :param layout:
-    :param seed:
-    :param RL_method:
-    :param total_steps:
-    :param neurons_per_layer:
-    :param activation_fn_txt:
-    :return:
+    :param start_datetime: Time at which training was started.
+    :param env_name: Name of the environment.
+    :param layout: Layout of the environment.
+    :param seed: Random seed used.
+    :param RL_method: RL algorithm that was used for the pretraining. 
+    :param total_steps: Number of steps for which the network was (pre)trained. 
+    :param neurons_per_layer: Number of neurons per layer of the network. 
+    :param activation_fn_txt: List of strings describing the activation functions.
+    :return: configuration dictionary
     '''
 
     config = {
@@ -104,9 +107,10 @@ def orbax_set_config(start_datetime=None, env_name=None, layout=None, seed=None,
 
 def orbax_parse_activation_fn(activation_fn_txt):
     '''
+    Parse list of activation functions as flax functions.
 
-    :param activation_fn_txt:
-    :return:
+    :param activation_fn_txt: List of strings describing the activation functions.
+    :return: List of flax functions describing the activation functions.
     '''
 
     activation_fn = [None] * len(activation_fn_txt)
@@ -153,7 +157,7 @@ def apply_ibp_rectangular(act_fns, params, mean, radius):
     :param params: Parameter dictionary of the network.
     :param mean: 2d array, with each row being an input point of dimension n.
     :param radius: 1d array, specifying the radius of the input in every dimension.
-    :return: lb and ub (both 2d arrays of the same shape as `mean`
+    :return: lb and ub (both 2d arrays of the same shape as `mean`)
     '''
 
     # Broadcast radius to match shape of the mean numpy array
@@ -184,21 +188,26 @@ def apply_ibp_rectangular(act_fns, params, mean, radius):
 
 
 class AgentState(TrainState):
-    # Setting default values for agent functions to make TrainState work in jitted function
+    '''
+    Class inherited from the TrainState class from flax. 
+    It sets default values for agent functions to make TrainState work in jitted function.
+    '''    
+    
     ibp_fn: Callable = struct.field(pytree_node=False)
 
 
 def create_train_state(model, act_funcs, rng, in_dim, learning_rate=0.01, ema=0, params=None):
     '''
+    Create a flax TrainState object.
 
-    :param model:
-    :param act_funcs:
-    :param rng:
-    :param in_dim:
-    :param learning_rate:
-    :param ema:
-    :param params:
-    :return:
+    :param model: MLP object describing number of neurons per layer and the activation functions. 
+    :param act_funcs: List of activation functions (required separately for the IBP function). 
+    :param rng: random number generator object. 
+    :param in_dim: Input dimension of the network.
+    :param learning_rate: Learning rate. 
+    :param ema: Rate of the EMA (exponential moving average) used in the optimizer. 
+    :param params: Additional parameters to be passed to the (flax) TrainState class.
+    :return: flax TrainState object.
     '''
 
     if params is None:
@@ -218,11 +227,11 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
     '''
     Function to compute Lipschitz constants using the techniques presented in the paper.
 
-    :param params: Neural network parameters
-    :param weighted: If true, use weighted norms
-    :param CPLip: If true, use the average activation operators (cplip) improvement
-    :param Linfty: If true, use Linfty norm; If false, use L1 norm (currently only L1 norm is used)
-    :return:
+    :param params: Neural network parameters.
+    :param weighted: If true, use weighted norms.
+    :param CPLip: If true, use the average activation operators (cplip) improvement.
+    :param Linfty: If true, use Linfty norm; If false, use L1 norm (currently only L1 norm is used).
+    :return: Lipschitz constant and list of weights (or None if weighted is False).
     '''
 
     if Linfty:
@@ -237,7 +246,7 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
         L = jnp.float32(1)
         # Compute Lipschitz coefficient by iterating through layers
         for layer in params["params"].values():
-            # Involve only the 'kernel' dictionaries of each layer in the network
+            # Involve only the 'kernel' dictionaries of each layer in the network, which are the weight matrices
             if "kernel" in layer:
                 L *= jnp.max(jnp.sum(jnp.abs(layer["kernel"]), axis=axis))
 
@@ -245,11 +254,13 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
         L = jnp.float32(0)
         matrices = []
         for layer in params["params"].values():
-            # Involve only the 'kernel' dictionaries of each layer in the network
+            # Collect all weight matrices of the network
             if "kernel" in layer:
                 matrices.append(layer["kernel"])
 
         nmatrices = len(matrices)
+        # Create a list with all products of consecutive weight matrices
+        # products[i][j] is the matrix product matrices[i + j] ... matrices[j]
         products = [matrices]
         prodnorms = [[jnp.max(jnp.sum(jnp.abs(mat), axis=axis)) for mat in matrices]]
         for nprods in range(1, nmatrices):
@@ -257,16 +268,19 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
             for idx in range(nmatrices - nprods):
                 prod_list.append(jnp.matmul(products[nprods - 1][idx], matrices[idx + nprods]))
             products.append(prod_list)
-            prodnorms.append([jnp.max(jnp.sum(jnp.abs(mat), axis=1)) for mat in prod_list])
+            prodnorms.append([jnp.max(jnp.sum(jnp.abs(mat), axis=axis)) for mat in prod_list])
 
         ncombs = 1 << (nmatrices - 1)
         for idx in range(ncombs):
-            # interpret idx as binary number of length nmatrices - 1,
+            # To iterate over all possible ways of putting norms or products between the layers, 
+            #  interpret idx as binary number of length (nmatrices - 1),
             # where the jth bit determines whether to put a norm or a product between layers j and j+1
+            # We use that the (nmatrices - 1)th bit of such number is always 0, which implies that
+            # each layer is taken into account for each term in the sum. 
             jprev = 0
             Lloc = jnp.float32(1)
             for jcur in range(nmatrices):
-                if idx & (1 << jcur) == 0:  # last one always true
+                if idx & (1 << jcur) == 0: 
                     Lloc *= prodnorms[jcur - jprev][jprev]
                     jprev = jcur + 1
 
@@ -277,7 +291,7 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
         L = jnp.float32(1)
         matrices = []
         for layer in params["params"].values():
-            # Involve only the 'kernel' dictionaries of each layer in the network
+            # Collect all weight matrices of the network
             if "kernel" in layer:
                 matrices.append(layer["kernel"])
         matrices.reverse()
@@ -293,7 +307,7 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
         L = jnp.float32(1)
         matrices = []
         for layer in params["params"].values():
-            # Involve only the 'kernel' dictionaries of each layer in the network
+            # Collect all weight matrices of the network
             if "kernel" in layer:
                 matrices.append(layer["kernel"])
 
@@ -308,7 +322,7 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
         L = jnp.float32(0)
         matrices = []
         for layer in params["params"].values():
-            # Involve only the 'kernel' dictionaries of each layer in the network
+            # Collect all weight matrices of the network
             if "kernel" in layer:
                 matrices.append(layer["kernel"])
         matrices.reverse()
@@ -321,8 +335,9 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
 
         matrices.reverse()
         nmatrices = len(matrices)
+        # Create a list with all products of consecutive weight matrices
+        # products[i][j] is the matrix product matrices[i + j] ... matrices[j]
         products = [matrices]
-        extra0 = []
         prodnorms = [[jnp.max(jnp.multiply(jnp.sum(jnp.multiply(jnp.abs(matrices[idx]),
                                                                 weights[-(idx + 2)][jnp.newaxis, :]), axis=1),
                                            jnp.float32(1) / weights[-(idx + 1)]))
@@ -340,12 +355,15 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
 
         ncombs = 1 << (nmatrices - 1)
         for idx in range(ncombs):
-            # interpret idx as binary number of length nmatrices - 1,
+            # To iterate over all possible ways of putting norms or products between the layers, 
+            #  interpret idx as binary number of length (nmatrices - 1),
             # where the jth bit determines whether to put a norm or a product between layers j and j+1
+            # We use that the (nmatrices - 1)th bit of such number is always 0, which implies that
+            # each layer is taken into account for each term in the sum. 
             jprev = 0
             Lloc = jnp.float32(1)
             for jcur in range(nmatrices):
-                if idx & (1 << jcur) == 0:  # last one always true
+                if idx & (1 << jcur) == 0: 
                     Lloc *= prodnorms[jcur - jprev][jprev]
                     jprev = jcur + 1
 
@@ -355,7 +373,7 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
         L = jnp.float32(0)
         matrices = []
         for layer in params["params"].values():
-            # Involve only the 'kernel' dictionaries of each layer in the network
+            # Collect all weight matrices of the network
             if "kernel" in layer:
                 matrices.append(layer["kernel"])
 
@@ -367,8 +385,9 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
         weights.reverse()
 
         nmatrices = len(matrices)
+        # Create a list with all products of consecutive weight matrices
+        # products[i][j] is the matrix product matrices[i + j] ... matrices[j]
         products = [matrices]
-        extra0 = []
         prodnorms = [[jnp.max(jnp.multiply(jnp.sum(jnp.multiply(jnp.abs(matrices[idx]),
                                                                 jnp.float32(1) / weights[-(idx + 1)][:, jnp.newaxis]),
                                                    axis=0),
@@ -387,12 +406,15 @@ def lipschitz_coeff(params, weighted, CPLip, Linfty):
 
         ncombs = 1 << (nmatrices - 1)
         for idx in range(ncombs):
-            # interpret idx as binary number of length nmatrices - 1,
+            # To iterate over all possible ways of putting norms or products between the layers, 
+            #  interpret idx as binary number of length (nmatrices - 1),
             # where the jth bit determines whether to put a norm or a product between layers j and j+1
+            # We use that the (nmatrices - 1)th bit of such number is always 0, which implies that
+            # each layer is taken into account for each term in the sum. 
             jprev = 0
             Lloc = jnp.float32(1)
             for jcur in range(nmatrices):
-                if idx & (1 << jcur) == 0:  # last one always true
+                if idx & (1 << jcur) == 0:
                     Lloc *= prodnorms[jcur - jprev][jprev]
                     jprev = jcur + 1
 
