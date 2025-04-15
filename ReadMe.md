@@ -273,8 +273,8 @@ We provide two scripts to replicate a subset of the results from [1]:
     bash experiments/run_tiny_benchmarks.sh 30000 1000000 6 | tee output/tiny_benchmarks.out
     ```
     When encountering out-of-memory errors, try reducing the batch sizes (see [the section above](#resolving-out-of-memory-errors)). The timeout multiplier of 6 helps to obtain more results within the timout when running on CPU.
-    - Expected run time on CPU: XXX hours (tested on an Apple Macbook Pro M4 Pro, 24 GB of RAM) 
-    - Expected run time on GPU: XXX hours (tested on a XXX)
+    - Expected run time on laptop CPU: 6 hours (tested on an Apple Macbook Pro M4 Pro, 24 GB of RAM) 
+    - Expected run time on laptop GPU: XXX hours (tested on a XXX)
 
 2. **Small benchmark set:** (recommended when running on a more powerful machine)
     ```

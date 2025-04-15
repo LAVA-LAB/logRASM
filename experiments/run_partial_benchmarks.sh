@@ -67,7 +67,7 @@ do
 done
 
 # Generate table
-python table_generator.py --folders main
+python table_generator.py --folders main --timeout $TO
 
 ############################################################
 ### STABLE BASELINES
@@ -137,7 +137,7 @@ do
 done
 
 # Generate table
-python table_generator.py --folders sb3
+python table_generator.py --folders sb3 --timeout $TO
 
 ############################################################
 ### HARD EXPERIMENTS (ONLY TRIPLE INTEGRATOR)
@@ -148,7 +148,8 @@ all_flags="--eps_decrease 0.01 --ppo_max_policy_lipschitz 10 --expDecr_multiplie
 
 flags_triple="--model TripleIntegrator --logger_prefix TripleIntegrator --pretrain_total_steps 100000 --hidden_layers 3 --mesh_loss 0.005 --mesh_loss_decrease_per_iter 0.9 --mesh_verify_grid_init 0.04 --noise_partition_cells 6 --max_refine_factor 4 --verify_batch_size ${triple_batch_size}"
 
-TO=$((2000*time_mul))
+TO=$((1800*time_mul+200)) # Add 200 seconds to avoid that pretraining causes a timeout
+TOtable=$((1800*time_mul))
 
 # Triple integrator
 for seed in 1;
@@ -161,4 +162,4 @@ do
 done
 
 # Generate table
-python table_generator.py --folders hard
+python table_generator.py --folders hard --timeout $TOtable

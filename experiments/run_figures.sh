@@ -9,7 +9,7 @@ if [ ! -z "$2" ]; then forward_pass_batch_size=$2; fi
 if [ ! -z "$3" ]; then time_mul=$3; fi
 collision_batch_size=$((verify_batch_size/4))
 
-TO=$((2000*time_mul))
+TO=$((1800*time_mul+200)) # Add 200 seconds to avoid that pretraining causes a timeout
 
 models=("LinearSystem --verify_batch_size ${verify_batch_size}" 
         "LinearSystem --layout 1 --verify_batch_size ${verify_batch_size}" 

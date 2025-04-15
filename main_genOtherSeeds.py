@@ -66,10 +66,21 @@ for folder in subfolders:
 MAIN = [
     '#!/bin/bash',
     '',
-    'models=("LinearSystem" "LinearSystem --layout 1" "MyPendulum" "CollisionAvoidance --noise_partition_cells 24 --verify_batch_size 10000")',
-    'all_flags="--logger_prefix main --eps_decrease 0.01 --ppo_max_policy_lipschitz 10 --hidden_layers 3 --expDecr_multiplier 10 --pretrain_method PPO_JAX --pretrain_total_steps 100000 --refine_threshold 250000000"',
+    'verify_batch_size=30000',
+    'forward_pass_batch_size=1000000',
+    'time_mul=1',
+    'if [ ! -z "$1" ]; then verify_batch_size=$1; fi',
+    'if [ ! -z "$2" ]; then forward_pass_batch_size=$2; fi',
+    'if [ ! -z "$3" ]; then time_mul=$3; fi',
+    'collision_batch_size=$((verify_batch_size/4))',
+    '',
+    'models=("LinearSystem --verify_batch_size ${verify_batch_size}" "LinearSystem --layout 1 --verify_batch_size ${verify_batch_size}" "MyPendulum --verify_batch_size ${verify_batch_size}" "CollisionAvoidance --noise_partition_cells 24 --verify_batch_size ${collision_batch_size}"))',
+    'all_flags="--logger_prefix main --eps_decrease 0.01 --ppo_max_policy_lipschitz 10 --hidden_layers 3 --expDecr_multiplier 10 --pretrain_method PPO_JAX --pretrain_total_steps 100000 --refine_threshold 250000000 --forward_pass_batch_size ${forward_pass_batch_size}"',
     'flags_mesh1="--mesh_loss 0.001 --mesh_loss_decrease_per_iter 0.8"',
     'flags_mesh2="--mesh_loss 0.01 --mesh_loss_decrease_per_iter 0.8"',
+    '',
+    'TO=$((1800*time_mul+200)) # Add 200 seconds to avoid that pretraining causes a timeout',
+    'TOtable=$((1800*time_mul))',
     '',
 ]
 
@@ -94,16 +105,16 @@ for i in range(4):
             line = ' '.join(map(str, [f'{p}' for p in probabilities if current[p] > 0]))
             MAIN += [f'  for p in {line}', '  do']
             if case == 'ours':
-                MAIN += ['    timeout 2000 python run.py --seed $seed --model ${models[' + str(i) + ']} $all_flags $flags_mesh' + str(
+                MAIN += ['    timeout $TO python run.py --seed $seed --model ${models[' + str(i) + ']} $all_flags $flags_mesh' + str(
                     mesh) + ' --probability_bound $p --exp_certificate;']
             elif case == 'no-lip':
-                MAIN += ['    timeout 2000 python run.py --seed $seed --model ${models[' + str(i) + ']} $all_flags $flags_mesh' + str(
+                MAIN += ['    timeout $TO python run.py --seed $seed --model ${models[' + str(i) + ']} $all_flags $flags_mesh' + str(
                     mesh) + ' --probability_bound $p --exp_certificate --no-weighted --no-cplip;']
             elif case == 'no-exp':
-                MAIN += ['    timeout 2000 python run.py --seed $seed --model ${models[' + str(i) + ']} $all_flags $flags_mesh' + str(
+                MAIN += ['    timeout $TO python run.py --seed $seed --model ${models[' + str(i) + ']} $all_flags $flags_mesh' + str(
                     mesh) + ' --probability_bound $p --no-exp_certificate;']
             else:
-                MAIN += ['    timeout 2000 python run.py --seed $seed --model ${models[' + str(i) + ']} $all_flags $flags_mesh' + str(
+                MAIN += ['    timeout $TO python run.py --seed $seed --model ${models[' + str(i) + ']} $all_flags $flags_mesh' + str(
                     mesh) + ' --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;']
             MAIN += ['  done']
     MAIN += ['  ']

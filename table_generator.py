@@ -11,7 +11,11 @@ pd.set_option('display.max_rows', None)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--folders', type=str, required=False,
-                    help="Can be either 'main', 'hard', 'sb3' (for stablebaselines), or a manual folder from which to partse all results")
+                    help="Can be either 'main', 'hard', 'sb3' (for stablebaselines), or a manual folder from which to parse all results")
+parser.add_argument('--timeout', type=int, required=False, default=1800,
+                    help="Timeout (in seconds) that was used for the experiments to parse into the table")
+parser.add_argument('--max_allowed_timeouts', type=int, required=False, default=2,
+                    help="Above this number of timeouts, the instance will be considered as a timeout overall (and marked as '--' in the table).")
 
 parser = parser.parse_args()
 
@@ -51,8 +55,6 @@ if not SB3_MODE:
     dic = {}
     dic_all_prob_bounds = []
     dic_all_cases = ['logRASM+Lip (ours)', 'logRASM', 'Lip', 'baseline']
-
-    timeout = 1800
 
     for folder in subfolders:
         info_file = Path(folder, 'info.csv')
@@ -106,7 +108,7 @@ if not SB3_MODE:
             }
 
         # Parse runtimes
-        if info['status'] == 'success' and 'total_CEGIS_time' in info and float(info['total_CEGIS_time']) < 1800:
+        if info['status'] == 'success' and 'total_CEGIS_time' in info and float(info['total_CEGIS_time']) < parser.timeout:
             dic[benchmark][case][p]['runtime'] += [float(info['total_CEGIS_time'])]
             dic[benchmark][case][p]['success'] += [True if info['status'] == 'success' else False]
         else:
@@ -132,8 +134,6 @@ if not SB3_MODE:
         'Benchmark & Learner-verifier & ' + ' & '.join(list(np.array(dic_all_prob_bounds, dtype=str))) + '\\\\',
     ]
 
-    max_allowed_timeouts = 2
-
     for model in all_models:
         if model in dic:
             i = 0  # Reset line number for each model
@@ -155,7 +155,7 @@ if not SB3_MODE:
                         # If entry exists, and the number of timeouts does not exceed the limit
                         # Also check if there is at least success (otherwise, average runtime is negative)
                         if p in dic[model][case] and \
-                                dic[model][case][p]['timeouts'] <= max_allowed_timeouts and \
+                                dic[model][case][p]['timeouts'] <= parser.max_allowed_timeouts and \
                                 any(np.array(dic[model][case][p]['success'], dtype=bool) == True):
 
                             times = dic[model][case][p]['runtime']
@@ -212,8 +212,6 @@ if SB3_MODE:
     dic_all_algos = []
     dic_all_settings = []
 
-    timeout = 1800
-
     for folder in subfolders:
         info_file = Path(folder, 'info.csv')
         args_file = Path(folder, 'args.csv')
@@ -263,7 +261,7 @@ if SB3_MODE:
             }
 
         # Parse runtimes
-        if info['status'] == 'success' and 'total_CEGIS_time' in info and float(info['total_CEGIS_time']) < timeout:
+        if info['status'] == 'success' and 'total_CEGIS_time' in info and float(info['total_CEGIS_time']) < parser.timeout:
             dic_sb[benchmark][steps][setting][algo]['runtime'] += [float(info['total_CEGIS_time'])]
             dic_sb[benchmark][steps][setting][algo]['success'] += [True if info['status'] == 'success' else False]
         else:
@@ -294,8 +292,6 @@ if SB3_MODE:
         'Benchmark & Steps & ' + ' & '.join(dic_all_algos * nSettings) + '\\\\',
     ]
 
-    max_allowed_timeouts = 2
-
     for model in all_models:
         if model in dic_sb:
             i = 0  # Reset line number for each model
@@ -318,7 +314,7 @@ if SB3_MODE:
                             # If entry exists, and the number of timeouts does not exceed the limit
                             # Also check if there is at least success (otherwise, average runtime is negative)
                             if setting in dic_sb[model][steps] and algo in dic_sb[model][steps][setting] and \
-                                    dic_sb[model][steps][setting][algo]['timeouts'] <= max_allowed_timeouts and \
+                                    dic_sb[model][steps][setting][algo]['timeouts'] <= parser.max_allowed_timeouts and \
                                     any(np.array(dic_sb[model][steps][setting][algo]['success'], dtype=bool) == True):
 
                                 times = dic_sb[model][steps][setting][algo]['runtime']
