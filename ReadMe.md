@@ -195,6 +195,8 @@ overview of the arguments):
 python run.py --model LinearSystem --probability_bound 0.9999 --pretrain_method PPO_JAX --pretrain_total_steps 100000 --mesh_loss 0.001 --exp_certificate
 ```
 
+If this results in an Out-Of-Memory error, reduce batch sizes, for example using `--verify_batch_size 3000 --forward_pass_batch_size 100000` (see [here](#resolving-out-of-memory-errors) for more details). 
+
 This example first pretrains a policy on the `linear-sys` benchmark for 100k steps using PPO and exports this policy as a checkpoint to the folder `ckpt/`. Then, this policy is
 given as input to the learner-verifier framework, which trains a logRASM that verifies a reach-avoid specification with a probability bound of $\rho = 0.9999$.
 
@@ -317,7 +319,6 @@ Second, the following command reproduces Tables 1 and 2 in [1] and exports these
 ```
 bash experiments/run_main.sh | tee output/full_main.out
 bash experiments/run_hard.sh | tee output/full_hard.out
-bash experiments/run_stablebaselines.sh | tee output/full_SB3.out
 ```
 
 For the Stable-Baselines3 experiments, we provide input policies trained with TRPO, TQC, SAC, and A2C as pretrained checkpoints in this repository (in the `ckpt_pretrain_sb3/`
@@ -325,6 +326,12 @@ folder). While not necessary for reproducing the results, you can retrain these 
 
 ```
 bash train_SB3_all.sh | tee output/train_SB3_all.out
+```
+
+Next, the following command reproduces Table 3 in [1] and exports it to the respective `.tex` and `.csv` files in the `output/` folder:
+
+```
+bash experiments/run_stablebaselines.sh | tee output/full_SB3.out
 ```
 
 Finally, the following command runs the comparison to LipBaB, an anytime algorithm for computing upper bounds on Lipschitz constants for neural networks. These experiments are
@@ -403,8 +410,8 @@ Finally, `--no-exp_certificate --no-weighted --no-cplip` is the baseline verifie
 
 | Learner                       | Default  | Help                                                                                                            |
 |-------------------------------|----------|-----------------------------------------------------------------------------------------------------------------|
-| Policy_learning_rate          | 5,00E-05 | Learning rate for changing the policy in the CEGIS loop                                                         |
-| V_learning_rate               | 5,00E-04 | Learning rate for changing the certificate in the CEGIS loop                                                    |
+| Policy_learning_rate          | 5.00E-05 | Learning rate for changing the policy in the CEGIS loop                                                         |
+| V_learning_rate               | 5.00E-04 | Learning rate for changing the certificate in the CEGIS loop                                                    |
 | epochs                        | 25       | Number of epochs to run in each iteration                                                                       |
 | num_samples_per_epoch         | 90000    | Total number of samples to train over in each epoch                                                             |
 | num_counterexamples_in_buffer | 30000    | Number of counterexamples to keep in the buffer                                                                 |
