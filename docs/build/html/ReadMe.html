@@ -291,6 +291,7 @@ overview of the arguments):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model</span> <span class="n">LinearSystem</span> <span class="o">--</span><span class="n">probability_bound</span> <span class="mf">0.9999</span> <span class="o">--</span><span class="n">pretrain_method</span> <span class="n">PPO_JAX</span> <span class="o">--</span><span class="n">pretrain_total_steps</span> <span class="mi">100000</span> <span class="o">--</span><span class="n">mesh_loss</span> <span class="mf">0.001</span> <span class="o">--</span><span class="n">exp_certificate</span>
 </pre></div>
 </div>
+<p>If this results in an Out-Of-Memory error, reduce batch sizes, for example using <code class="docutils literal notranslate"><span class="pre">--verify_batch_size</span> <span class="pre">3000</span> <span class="pre">--forward_pass_batch_size</span> <span class="pre">100000</span></code> (see <a class="reference internal" href="#resolving-out-of-memory-errors"><span class="xref myst">here</span></a> for more details).</p>
 <p>This example first pretrains a policy on the <code class="docutils literal notranslate"><span class="pre">linear-sys</span></code> benchmark for 100k steps using PPO and exports this policy as a checkpoint to the folder <code class="docutils literal notranslate"><span class="pre">ckpt/</span></code>. Then, this policy is
 given as input to the learner-verifier framework, which trains a logRASM that verifies a reach-avoid specification with a probability bound of $\rho = 0.9999$.</p>
 <ul>
@@ -365,16 +366,16 @@ The multiplication of the timeouts is taken compared to the default timeouts (as
 </div>
 <p>When encountering out-of-memory errors, try reducing the batch sizes (see <a class="reference internal" href="#resolving-out-of-memory-errors"><span class="xref myst">the section above</span></a>). The timeout multiplier of 6 helps to obtain more results within the timout when running on CPU.</p>
 <ul class="simple">
-<li><p>Expected run time on CPU: XXX hours (tested on an Apple Macbook Pro M4 Pro, 24 GB of RAM)</p></li>
-<li><p>Expected run time on GPU: XXX hours (tested on a XXX)</p></li>
+<li><p>Expected run time on laptop CPU: 6 hours (tested on an Apple Macbook Pro M4 Pro, 24 GB of RAM)</p></li>
+<li><p>Expected run time on laptop GPU: 5-6 hours (tested on a laptop running Ubuntu, with an Intel i7 CPU, 64 GB of RAM, and an NVIDIA RTX A500 GPU)</p></li>
 </ul>
 </li>
-<li><p><strong>Small benchmark set:</strong> (recommended when running on a more powerful machine)</p>
+<li><p><strong>Small benchmark set</strong> (recommended when running on a more powerful machine)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_partial_benchmarks</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">partial_benchmarks</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Expected run time on GPU: 8 hours (tested on a Debian server, with an AMD Ryzen Threadripper PRO 5965WX CPU, 512~GB of RAM, and an NVIDIA GeForce RTX~4090 GPU)</p></li>
+<li><p>Expected run time on GPU: 8 hours (tested on a Debian server, with an AMD Ryzen Threadripper PRO 5965WX CPU, 512 GB of RAM, and an NVIDIA GeForce RTX 4090 GPU)</p></li>
 <li><p>Expected run time on CPU: Not tested</p></li>
 </ul>
 </li>
@@ -409,12 +410,15 @@ same machine as in [1], the resulting runtimes are higher.</p>
 <p>Second, the following command reproduces Tables 1 and 2 in [1] and exports these to the respective <code class="docutils literal notranslate"><span class="pre">.tex</span></code> and <code class="docutils literal notranslate"><span class="pre">.csv</span></code> files in the <code class="docutils literal notranslate"><span class="pre">output/</span></code> folder:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_main</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">full_main</span><span class="o">.</span><span class="n">out</span>
 <span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_hard</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">full_hard</span><span class="o">.</span><span class="n">out</span>
-<span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_stablebaselines</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">full_SB3</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
 </div>
 <p>For the Stable-Baselines3 experiments, we provide input policies trained with TRPO, TQC, SAC, and A2C as pretrained checkpoints in this repository (in the <code class="docutils literal notranslate"><span class="pre">ckpt_pretrain_sb3/</span></code>
 folder). While not necessary for reproducing the results, you can retrain these policies by running:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">train_SB3_all</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">train_SB3_all</span><span class="o">.</span><span class="n">out</span>
+</pre></div>
+</div>
+<p>Next, the following command reproduces Table 3 in [1] and exports it to the respective <code class="docutils literal notranslate"><span class="pre">.tex</span></code> and <code class="docutils literal notranslate"><span class="pre">.csv</span></code> files in the <code class="docutils literal notranslate"><span class="pre">output/</span></code> folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">experiments</span><span class="o">/</span><span class="n">run_stablebaselines</span><span class="o">.</span><span class="n">sh</span> <span class="o">|</span> <span class="n">tee</span> <span class="n">output</span><span class="o">/</span><span class="n">full_SB3</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
 </div>
 <p>Finally, the following command runs the comparison to LipBaB, an anytime algorithm for computing upper bounds on Lipschitz constants for neural networks. These experiments are
@@ -567,11 +571,11 @@ Finally, <code class="docutils literal notranslate"><span class="pre">--no-exp_c
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Policy_learning_rate</p></td>
-<td><p>5,00E-05</p></td>
+<td><p>5.00E-05</p></td>
 <td><p>Learning rate for changing the policy in the CEGIS loop</p></td>
 </tr>
 <tr class="row-odd"><td><p>V_learning_rate</p></td>
-<td><p>5,00E-04</p></td>
+<td><p>5.00E-04</p></td>
 <td><p>Learning rate for changing the certificate in the CEGIS loop</p></td>
 </tr>
 <tr class="row-even"><td><p>epochs</p></td>
