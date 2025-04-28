@@ -13,8 +13,7 @@ all_flags="--logger_prefix main --eps_decrease 0.01 --ppo_max_policy_lipschitz 1
 flags_mesh1="--mesh_loss 0.001 --mesh_loss_decrease_per_iter 0.8"
 flags_mesh2="--mesh_loss 0.01 --mesh_loss_decrease_per_iter 0.8"
 
-TO=$((1800*time_mul+200)) # Add 200 seconds to avoid that pretraining causes a timeout
-TOtable=$((1800*time_mul))
+TO=$(((1800+200)*time_mul)) # Add 200 seconds to avoid that pretraining causes a timeout
 
 for seed in {4..10};
 do

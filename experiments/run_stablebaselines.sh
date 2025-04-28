@@ -18,7 +18,7 @@ models=("LinearSystem --verify_batch_size ${verify_batch_size}"
 all_flags="--epochs 100 --eps_decrease 0.01 --hidden_layers 3 --refine_threshold 100000000 --forward_pass_batch_size ${forward_pass_batch_size}"
 extra_flags=("--expDecr_multiplier 10 --mesh_loss 0.0005" "--expDecr_multiplier 0.1 --mesh_loss 0.001")
 
-TO=$((1850time_mul+50)) # Add 50 seconds to avoid that loading the SB3 checkpoint causes a timeout
+TO=$(((1800+50)*time_mul)) # Add 50 seconds to avoid that loading the SB3 checkpoint causes a timeout
 TOtable=$((1800*time_mul))
 
 for flags in 0 1;

@@ -22,7 +22,7 @@ flags_mesh2="--mesh_loss 0.01 --mesh_loss_decrease_per_iter 0.8"
 
 prob_bounds=(0.8 0.9 0.95 0.99 0.999 0.9999 0.999999)
 
-TO=$((1800*time_mul+200)) # Add 200 seconds to avoid that pretraining causes a timeout
+TO=$(((1800+200)*time_mul)) # Add 200 seconds to avoid that pretraining causes a timeout
 TOtable=$((1800*time_mul))
 
 # Run linear system, pendulum, and linear system (hard)
