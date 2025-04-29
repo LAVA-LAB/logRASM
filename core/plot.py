@@ -673,7 +673,21 @@ def plot_heatmap(env, coordinates, values, folder=False, filename=False, title=T
     data = pd.DataFrame(data={'x': coordinates[:, plot_dim[0]], 'y': coordinates[:, plot_dim[1]], 'z': values})
     data = data.pivot(index='y', columns='x', values='z')[::-1]
     sns.heatmap(data)
-
+    
+    # Reformat axis labels to avoid floating point issues in axis labels
+    #  (based on https://github.com/mwaskom/seaborn/issues/1005#issue-175150095)
+    fmt = '{:0.3f}'
+    xticklabels = []
+    for item in ax.get_xticklabels():
+        item.set_text(fmt.format(float(item.get_text())))
+        xticklabels.append(item)
+    yticklabels = []
+    for item in ax.get_yticklabels():
+        item.set_text(fmt.format(float(item.get_text())))
+        yticklabels.append(item)
+    ax.set_xticklabels(xticklabels)
+    ax.set_yticklabels(yticklabels)
+  
     if folder and filename:
         if Path(folder).exists():
             # Save figure

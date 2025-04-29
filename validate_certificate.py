@@ -255,7 +255,7 @@ def validate_RASM(checkpoint_path, cell_width=0.01, batch_size=10000, forward_pa
     pi_act_funcs_txt = Policy_config['activation_fn']
     pi_act_funcs_jax = orbax_parse_activation_fn(pi_act_funcs_txt)
 
-    # Load policy configuration and
+    # Load policy configuration
     V_state, Policy_state, Policy_config, Policy_neurons_withOut = create_nn_states(env, Policy_config,
                                                                                     V_neurons_withOut,
                                                                                     V_act_fn_withOut,
@@ -459,7 +459,7 @@ if __name__ == "__main__":
     parser.add_argument('--cell_width', type=float, default=0.01,
                         help="Cell width of partitioning (logRASM/RASM conditions are checked for every cell center)")
     parser.add_argument('--num_simulations', type=int, default=10000,
-                        help="Number of traces to simulate (for empirically estimating the reach-avoid probability.")
+                        help="Number of traces to simulate (for empirically estimating the reach-avoid probability).")
     parser.add_argument('--batch_size', type=int, default=10000,
                         help="Number of states for which to check exp. decrease condition in the same batch.")
     parser.add_argument('--forward_pass_batch_size', type=int, default=1000000,
@@ -473,13 +473,12 @@ if __name__ == "__main__":
                         help="If True, plot RASM.")
     parser.add_argument('--validate_conditions', action=argparse.BooleanOptionalAction, default=True,
                         help="If True, RASM conditions are validated.")
+    parser.add_argument('--plot_latex_text', action=argparse.BooleanOptionalAction, default=True,
+                        help="If True, use LaTeX for plotting.")
 
     args = parser.parse_args()
     args.cwd = os.getcwd()
 
-    args.checkpoint = 'output/date=2025-01-19_03-22-58_model=LinearSystem_alg=PPO_JAX/final_ckpt'
-    args.plot_RASM = True
-    args.validate_conditions = False
 
     # Check whether to check a single checkpoint or a complete folder
     if len(args.check_folder) != 0:
@@ -487,6 +486,9 @@ if __name__ == "__main__":
         print(f'- Validate all checkpoints in folder "{args.check_folder}"')
         if len(args.prefix) > 0:
             print(f'- Restrict to folders with prefix: "{args.prefix}"')
+            
+        if len(args.checkpoint) != 0:
+            print("Warning: --checkpoint argument ignored when also specifying --check_folder.")
 
         # Check complete folder
         validate_all(args, final_ckpt_name='final_ckpt')
@@ -498,4 +500,4 @@ if __name__ == "__main__":
 
         validate_RASM(checkpoint_path=checkpoint_path, cell_width=args.cell_width, batch_size=args.batch_size,
                       expected_decrease_samples=args.expected_decrease_samples, seed=args.seed,
-                      num_traces=args.num_simulations, validate_conditions=args.validate_conditions, plot_RASM=args.plot_RASM, plot_latex_text=args.plot_latex_texr)
+                      num_traces=args.num_simulations, validate_conditions=args.validate_conditions, plot_RASM=args.plot_RASM, plot_latex_text=args.plot_latex_text)
