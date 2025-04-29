@@ -413,7 +413,8 @@ def validate_all(args, final_ckpt_name):
     Validate all learned certificates stored in the output folder (which contain the given prefix)
     '''
 
-    subfolders = [f.path for f in os.scandir(args.check_folder) if f.is_dir()]
+    check_folder = Path(args.cwd, args.check_folder)
+    subfolders = [f.path for f in os.scandir(check_folder) if f.is_dir()]
     validate_ckpts = []
 
     # Iterate over all folders
@@ -450,9 +451,9 @@ if __name__ == "__main__":
 
     # First two arguments are for validating *all checkpoints* in the provided folder
     parser.add_argument('--check_folder', type=str, default='',
-                        help="File to load orbax checkpoint from")
+                        help="Folder to load orbax checkpoints from.")
     parser.add_argument('--prefix', type=str, default='',
-                        help="Only check checkpoints whose output folder starts with the given prefix")
+                        help="Only check checkpoints whose output folder starts with the given prefix.")
     #
     parser.add_argument('--checkpoint', type=str, default='',
                         help="File to load orbax checkpoint from")
@@ -482,8 +483,10 @@ if __name__ == "__main__":
 
     # Check whether to check a single checkpoint or a complete folder
     if len(args.check_folder) != 0:
+      
+        check_folder = Path(args.cwd, args.check_folder)
 
-        print(f'- Validate all checkpoints in folder "{args.check_folder}"')
+        print(f'- Validate all checkpoints in folder "{check_folder}"')
         if len(args.prefix) > 0:
             print(f'- Restrict to folders with prefix: "{args.prefix}"')
             
