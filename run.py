@@ -373,7 +373,8 @@ if __name__ == "__main__":
 
         if args.validate:
             if finished:
-                num_traces = 1000
+                # Perform at least enough simulations to get a more fine-grained empirical satisfaction probability than needed to show the satisfaction probability
+                num_traces = max(1000, int(1 / (1 - args.probability_bound) * 10))
             else:
                 num_traces = 0
             validate_RASM(final_ckpt_path, num_traces=num_traces, plot_latex_text=args.plot_latex_text)  # Perform validation of RASM

@@ -394,7 +394,7 @@ def validate_RASM(checkpoint_path, cell_width=0.01, batch_size=10000, forward_pa
         if num_traces > 0:
             sim = Simulator(env, Policy_state, key, init_space=env.init_space, xInits=10000)
             traces, actions, empirical_sat = sim.empirical_reachability(num_traces=num_traces, horizon=100)
-            print(f'- Empirical satisfaction probability: {empirical_sat:.3f}')
+            print(f'- Empirical satisfaction probability: {empirical_sat:.3f} (out of {num_traces} simulations)')
             LOGG['empirical satisfaction'] = empirical_sat
 
             filename = f"validation_traces_{start_datetime}"
@@ -437,7 +437,7 @@ def validate_all(args, final_ckpt_name):
         print('==========================')
         validate_RASM(checkpoint_path=checkpoint_path, cell_width=args.cell_width, batch_size=args.batch_size,
                       expected_decrease_samples=args.expected_decrease_samples, seed=args.seed,
-                      validate_conditions=args.validate_conditions, plot_RASM=args.plot_RASM, plot_latex_text=args.plot_latex_text)
+                      num_traces=args.num_simulations, validate_conditions=args.validate_conditions, plot_RASM=args.plot_RASM, plot_latex_text=args.plot_latex_text)
 
 
 # %%
@@ -480,16 +480,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.cwd = os.getcwd()
 
-
     # Check whether to check a single checkpoint or a complete folder
     if len(args.check_folder) != 0:
-      
+
         check_folder = Path(args.cwd, args.check_folder)
 
         print(f'- Validate all checkpoints in folder "{check_folder}"')
         if len(args.prefix) > 0:
             print(f'- Restrict to folders with prefix: "{args.prefix}"')
-            
+
         if len(args.checkpoint) != 0:
             print("Warning: --checkpoint argument ignored when also specifying --check_folder.")
 
