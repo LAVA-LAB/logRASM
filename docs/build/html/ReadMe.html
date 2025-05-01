@@ -314,7 +314,8 @@ that summarize other relevant statistics of the run.</p>
 <h2>Validating results<a class="headerlink" href="#validating-results" title="Link to this heading"></a></h2>
 <p>The file <code class="docutils literal notranslate"><span class="pre">validate_certificate.py</span></code> can be used to check the validity of a learned RASM empirically.
 This validation can be called automatically upon termination of the learner-verifier by adding the argument <code class="docutils literal notranslate"><span class="pre">--validate</span></code> to the <code class="docutils literal notranslate"><span class="pre">run.py</span></code> script.
-Alternatively, the validation can be called externally on a given checkpoint as follows:</p>
+Doing so</p>
+<p>Alternatively, the validation can be called externally on a given checkpoint as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">validate_certificate</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">checkpoint</span> <span class="s1">&#39;output/.../final_ckpt/&#39;</span> <span class="o">--</span><span class="n">cell_width</span> <span class="mf">0.01</span>
 </pre></div>
 </div>

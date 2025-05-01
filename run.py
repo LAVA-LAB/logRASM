@@ -371,17 +371,21 @@ if __name__ == "__main__":
                                 save_args=flax.training.orbax_utils.save_args_from_target(ckpt), force=True)
         print(f'- Policy and certificate checkpoint exported to {str(final_ckpt_path)}')
 
-        if args.validate:
-            if finished:
-                # Perform at least enough simulations to get a more fine-grained empirical satisfaction probability than needed to show the satisfaction probability
-                num_traces = max(1000, int(1 / (1 - args.probability_bound) * 10))
-            else:
-                num_traces = 0
-            validate_RASM(final_ckpt_path, num_traces=num_traces, plot_latex_text=args.plot_latex_text)  # Perform validation of RASM
-
         ##########
 
         if finished:
+            total_time = time.time() - cegis_start_time
+            LOGG.add_info(key='status', value='success')
+            LOGG.add_info(key='total_CEGIS_time', value=total_time)
+            LOGG.add_info(key='verify_samples', value=total_samples_used)
+            LOGG.add_info(key='verify_samples_naive', value=total_samples_naive)
+            print(f'\nTotal CEGIS (learner-verifier) runtime: {total_time:.2f} sec.')
+
+            if args.validate:
+                # Perform at least enough simulations to get a more fine-grained empirical satisfaction probability than needed to show the satisfaction probability
+                num_traces = max(1000, int(1 / (1 - args.probability_bound)))
+                validate_RASM(final_ckpt_path, num_traces=num_traces, plot_latex_text=args.plot_latex_text)  # Perform validation of RASM
+
             print('\n=== Successfully learned certificate! ===')
 
             # Plot final (log)RASM
@@ -392,11 +396,6 @@ if __name__ == "__main__":
                                     title=(not args.presentation_plots),
                                     labels=(not args.presentation_plots))
 
-            total_time = time.time() - cegis_start_time
-            LOGG.add_info(key='status', value='success')
-            LOGG.add_info(key='total_CEGIS_time', value=total_time)
-            LOGG.add_info(key='verify_samples', value=total_samples_used)
-            LOGG.add_info(key='verify_samples_naive', value=total_samples_naive)
             print(f'\nTotal CEGIS (learner-verifier) runtime: {total_time:.2f} sec.')
 
             break

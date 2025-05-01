@@ -216,6 +216,8 @@ that summarize other relevant statistics of the run.
 
 The file `validate_certificate.py` can be used to check the validity of a learned RASM empirically.
 This validation can be called automatically upon termination of the learner-verifier by adding the argument `--validate` to the `run.py` script.
+Doing so 
+
 Alternatively, the validation can be called externally on a given checkpoint as follows:
 
 ```

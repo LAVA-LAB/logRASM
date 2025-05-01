@@ -7,8 +7,8 @@ optax==0.2.4
 orbax-checkpoint==0.11.12
 pandas==2.2.3
 seaborn==0.13.2
-stable-baselines3==2.6.0
-sb3-contrib==2.6.0
+stable-baselines3>=2.6.0
+sb3-contrib>=2.6.0
 sphinx==8.2.3
 sphinx_rtd_theme==3.0.2
 sphinx_mdinclude==0.6.2
