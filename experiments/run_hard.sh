@@ -72,7 +72,7 @@ flags_drone4D="--model Drone4D --layout 2 --logger_prefix Drone4D --pretrain_tot
 #done
 
 # Drone4D
-for seed in {1..10};
+for seed in {1..2};
 do
   for p in 0.8 0.9 0.99 0.9999 0.999999
   do
@@ -81,7 +81,7 @@ do
   done
 done
 #
-for seed in {1..3};
+for seed in {1..2};
 do
   for p in 0.8 0.9 0.99 0.9999 0.999999
   do

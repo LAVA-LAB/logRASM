@@ -149,28 +149,18 @@ conda create -n lograsm python=3.12
 conda activate lograsm
 ```
 
-### Step 2: Install JAX
+### Step 2: Install dependencies
 
-To install JAX with GPU acceleration, run
-
-```
-pip install --upgrade "jax[cuda12]"
-```
-
-This will install the necessary CUDA dependencies within the Conda environment
-
-To instead install JAX without GPU acceleration, run
+To install with GPU acceleration, install the Python dependencies with
 
 ```
-pip install --upgrade jax
+pip3 install -r requirements_gpu.txt
 ```
 
-### Step 3: Installing remaining dependencies
-
-Finally, install the remaining Python dependencies:
+TO install without GPU acceleration, install the Python dependencies with
 
 ```
-pip3 install -r requirements.txt
+pip3 install -r requirements_cpu.txt
 ```
 
 # 4. Running for a single benchmark (smoke test)

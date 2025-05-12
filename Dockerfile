@@ -28,9 +28,9 @@ RUN mkdir /home/lograsm
 WORKDIR /home/lograsm
 
 # Obtain requirements and install them
-COPY requirements.txt requirements.txt
+COPY requirements_cpu.txt requirements_gpu.txt
 RUN /home/miniconda3/bin/pip install --upgrade pip
-RUN /home/miniconda3/bin/pip install --no-cache-dir -r requirements.txt
+RUN /home/miniconda3/bin/pip install --no-cache-dir -r requirements_cpu.txt
 
 # Copy all files
 WORKDIR /home/lograsm
