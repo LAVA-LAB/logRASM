@@ -396,8 +396,6 @@ if __name__ == "__main__":
                                     title=(not args.presentation_plots),
                                     labels=(not args.presentation_plots))
 
-            print(f'\nTotal CEGIS (learner-verifier) runtime: {total_time:.2f} sec.')
-
             break
 
         else:

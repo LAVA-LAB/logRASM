@@ -44,10 +44,11 @@ do
     # Lipschitz only
     timeout $TO python run.py --seed $seed $flags_triple $all_flags --probability_bound $p --no-exp_certificate;
   done
-  for p in 0.8 0.9 0.99 0.999 0.9999 0.99999 0.999999
-  do
-    # Baseline
-    timeout $TO python run.py --seed $seed $flags_triple $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;
+#  for p in 0.8 0.9 0.99 0.999 0.9999 0.99999 0.999999
+#  do
+#    # Baseline
+#    timeout $TO python run.py --seed $seed $flags_triple $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;
+#  done
 done
 
 # Planar robot
@@ -60,18 +61,18 @@ do
   done
 done
 #
-for seed in {1..3};
-do
-  for p in 0.8 0.9 0.99 0.999 0.9999 0.99999 0.999999
-  do
-    # logRASM only
-    timeout $TO python run.py --seed $seed $flags_planar $all_flags --probability_bound $p --exp_certificate --no-weighted --no-cplip;
-    # Lipschitz only
-    timeout $TO python run.py --seed $seed $flags_planar $all_flags --probability_bound $p --no-exp_certificate;
-    # Baseline
-    timeout $TO python run.py --seed $seed $flags_planar $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;
-  done
-done
+#for seed in {1..3};
+#do
+#  for p in 0.8 0.9 0.99 0.999 0.9999 0.99999 0.999999
+#  do
+#    # logRASM only
+#    timeout $TO python run.py --seed $seed $flags_planar $all_flags --probability_bound $p --exp_certificate --no-weighted --no-cplip;
+#    # Lipschitz only
+#    timeout $TO python run.py --seed $seed $flags_planar $all_flags --probability_bound $p --no-exp_certificate;
+#    # Baseline
+#    timeout $TO python run.py --seed $seed $flags_planar $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;
+#  done
+#done
 
 # Drone4D
 for seed in {1..10};
@@ -83,18 +84,18 @@ do
   done
 done
 #
-for seed in {1..3};
-do
-  for p in 0.8 0.9 0.99 0.999 0.9999 0.99999 0.999999
-  do
-    # logRASM only
-    timeout $TO python run.py --seed $seed $flags_drone4D $all_flags --probability_bound $p --exp_certificate --no-weighted --no-cplip;
-    # Lipschitz only
-    timeout $TO python run.py --seed $seed $flags_drone4D $all_flags --probability_bound $p --no-exp_certificate;
-    # Baseline
-    timeout $TO python run.py --seed $seed $flags_drone4D $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;
-  done
-done
+#for seed in {1..3};
+#do
+#  for p in 0.8 0.9 0.99 0.999 0.9999 0.99999 0.999999
+#  do
+#    # logRASM only
+#    timeout $TO python run.py --seed $seed $flags_drone4D $all_flags --probability_bound $p --exp_certificate --no-weighted --no-cplip;
+#    # Lipschitz only
+#    timeout $TO python run.py --seed $seed $flags_drone4D $all_flags --probability_bound $p --no-exp_certificate;
+#    # Baseline
+#    timeout $TO python run.py --seed $seed $flags_drone4D $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;
+#  done
+#done
 
 # Drone4D (3 layers)
 for seed in {1..10};
@@ -106,18 +107,18 @@ do
   done
 done
 #
-for seed in {1..3};
-do
-  for p in 0.8 0.9 0.99 0.999 0.9999 0.99999 0.999999
-  do
-    # logRASM only
-    timeout $TO python run.py --seed $seed $flags_drone4Db $all_flags --probability_bound $p --exp_certificate --no-weighted --no-cplip;
-    # Lipschitz only
-    timeout $TO python run.py --seed $seed $flags_drone4Db $all_flags --probability_bound $p --no-exp_certificate;
-    # Baseline
-    timeout $TO python run.py --seed $seed $flags_drone4Db $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;
-  done
-done
+#for seed in {1..3};
+#do
+#  for p in 0.8 0.9 0.99 0.999 0.9999 0.99999 0.999999
+#  do
+#    # logRASM only
+#    timeout $TO python run.py --seed $seed $flags_drone4Db $all_flags --probability_bound $p --exp_certificate --no-weighted --no-cplip;
+#    # Lipschitz only
+#    timeout $TO python run.py --seed $seed $flags_drone4Db $all_flags --probability_bound $p --no-exp_certificate;
+#    # Baseline
+#    timeout $TO python run.py --seed $seed $flags_drone4Db $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;
+#  done
+#done
 
 # Generate table
 python table_generator.py --folders hard --timeout $TOtable
