@@ -290,13 +290,11 @@ class Verifier:
 
     def get_Lipschitz(self):
         '''
-        Compute the Lipschitz constants of the policy and certificate networks 
-        and the combined Lipschitz constant Kprime. 
+        Compute the Lipschitz constants of the policy and certificate networks.
 
         :return:
            - lip_policy: Lipschitz constant of the policy network.
            - lip_certificate: Lipschitz constant of the certificate network.
-           - Kprime: combined Lipschitz constant of x \mapsto V(f(x, pi(x), noise)).
         '''
 
         # Update Lipschitz coefficients
@@ -304,6 +302,25 @@ class Verifier:
                                         self.args.cplip, self.args.linfty)
         lip_certificate, _ = lipschitz_coeff(jax.lax.stop_gradient(self.V_state.params), self.args.weighted,
                                              self.args.cplip, self.args.linfty)
+
+        if self.args.linfty:
+            norm = 'L_infty'
+        else:
+            norm = 'L1'
+
+        if not self.args.silent:
+            print(f'-- Lipschitz coefficient of certificate: {lip_certificate:.3f} ({norm})')
+            print(f'-- Lipschitz coefficient of policy: {lip_policy:.3f} ({norm})')
+
+        return lip_policy, lip_certificate
+
+    def get_Kprime(self, lip_policy, lip_certificate):
+        '''
+        Compute the combined Lipschitz constant Kprime.
+
+        :return:
+           - Kprime: combined Lipschitz constant of x \mapsto V(f(x, pi(x), noise)).
+        '''
 
         if self.args.linfty and self.args.split_lip:
             norm = 'L_infty'
@@ -321,10 +338,8 @@ class Verifier:
 
         if not self.args.silent:
             print(f'- Overall Lipschitz coefficient K = {Kprime:.3f} ({norm})')
-            print(f'-- Lipschitz coefficient of certificate: {lip_certificate:.3f} ({norm})')
-            print(f'-- Lipschitz coefficient of policy: {lip_policy:.3f} ({norm})')
 
-        return lip_policy, lip_certificate, Kprime
+        return Kprime
 
     def check_and_refine(self, iteration, env, args, V_state, Policy_state):
         '''
@@ -355,7 +370,8 @@ class Verifier:
         # Define uniform verify grid, which covers the complete state space with the specified `tau` (mesh size)
         initial_grid = self.uniform_grid(env=env, mesh_size=args.mesh_verify_grid_init, Linfty=args.linfty)
 
-        lip_policy, lip_certificate, Kprime = self.get_Lipschitz()
+        # Compute Lipschitz constants
+        lip_policy, lip_certificate = self.get_Lipschitz()
 
         SAT_exp = False
         SAT_init = False
@@ -378,7 +394,7 @@ class Verifier:
                 if not args.silent:
                     print(f'\nCheck expected decrease conditions...')
                 cx_exp, cx_numhard_exp, cx_weights_exp, cx_hard_exp, suggested_mesh_exp = self.check_expected_decrease(
-                    iteration, grid_exp, Kprime, lip_certificate, compare_with_lip=False)
+                    iteration, grid_exp, lip_policy, lip_certificate, compare_with_lip=False)
                 if len(cx_exp) == 0:
                     SAT_exp = True
 
@@ -386,7 +402,7 @@ class Verifier:
                 if not args.silent:
                     print(f'\nCheck initial state conditions...')
                 cx_init, cx_numhard_init, cx_weights_init, cx_hard_init, suggested_mesh_init, _ = self.check_initial_states(
-                    grid_init, Kprime, lip_certificate, compare_with_lip=False)
+                    grid_init, lip_policy, lip_certificate, compare_with_lip=False)
                 if len(cx_init) == 0:
                     SAT_init = True
 
@@ -394,7 +410,7 @@ class Verifier:
                 if not args.silent:
                     print(f'\nCheck unsafe state conditions...')
                 cx_unsafe, cx_numhard_unsafe, cx_weights_unsafe, cx_hard_unsafe, suggested_mesh_unsafe = self.check_unsafe_state(
-                    grid_unsafe, Kprime, lip_certificate, compare_with_lip=False)
+                    grid_unsafe, lip_policy, lip_certificate, compare_with_lip=False)
                 if len(cx_unsafe) == 0:
                     SAT_unsafe = True
 
@@ -462,13 +478,13 @@ class Verifier:
 
         return SAT, counterx, counterx_weights, counterx_hard, total_samples_used, total_samples_naive
 
-    def check_expected_decrease(self, iteration, grid, Kprime, lip_certificate, compare_with_lip=False):
+    def check_expected_decrease(self, iteration, grid, lip_policy, lip_certificate, compare_with_lip=False):
         '''
         Check the expected decrease condition. 
 
         :param iteration: CEGIS iteration index. 
         :param grid: Verification grid. 
-        :param Kprime: Combined Lipschitz constant. 
+        :param lip_policy: Lipschitz constant of the policy network.
         :param lip_certificate: Lipschitz constant of the certificate network. 
         :param compare_with_lip: Compare IBP and Lipschitz for the old state. (For the new state, Lipschitz is always used)
         :return: 
@@ -478,6 +494,10 @@ class Verifier:
            - hard_violation_idxs : boolean array, specifying which violations are hard. 
            - suggested_mesh_expDecr : Suggested meshes for each violation.
         '''
+
+        # Compute combined Lipschitz constant
+        Kprime = self.get_Kprime(lip_policy, lip_certificate)
+        Kprime_no_policy = self.get_Kprime(lip_policy, 0)
 
         batch_size = self.args.forward_pass_batch_size
 
@@ -525,48 +545,13 @@ class Verifier:
                 if not self.args.silent:
                     print(f'- Warning: single forward pass with {len(x_decrease):,} samples failed. Try again with batch size of {B}.')
 
-        ### Calculate E[V_{k+1}] ###
         # Determine actions for every point where we need to check the expected decrease condition
         actions = batched_forward_pass(self.Policy_state.apply_fn, self.Policy_state.params,
                                        x_decrease[:, :self.env.state_dim],
                                        self.env.action_space.shape[0], batch_size=batch_size)
 
-        # Initialize array
-        ExpV_xPlus = np.zeros(len(x_decrease))
-
-        # Create batches
-        num_batches = np.ceil(len(x_decrease) / self.args.verify_batch_size).astype(int)
-        starts = np.arange(num_batches) * self.args.verify_batch_size
-        ends = np.minimum(starts + self.args.verify_batch_size, len(x_decrease))
-
-        for (i, j) in tqdm(zip(starts, ends), total=len(starts), desc='Compute E[V(x_{k+1})]'):
-            x = x_decrease[i:j, :self.env.state_dim]
-            u = actions[i:j]
-
-            ExpV_xPlus[i:j] = self.vmap_expectation_Vx_plus(self.V_state, jax.lax.stop_gradient(self.V_state.params), x,
-                                                            u, self.noise_lb, self.noise_ub, self.noise_int_ub)
-
-        ### Calculate differences in certificate value ###
-        Vdiff_ibp = ExpV_xPlus - Vx_lb_decrease
-        Vdiff_center = ExpV_xPlus - Vx_center_decrease
-
-        if self.args.improved_softplus_lip:
-            softplus_lip = np.maximum((1 - np.exp(-np.where(Kprime * mesh_decrease * np.exp(-Vx_lb_decrease) < 1,
-                                                            Vx_lb_decrease, Vx_center_decrease))), 1e-4)
-        else:
-            softplus_lip = np.ones(len(Vdiff_ibp))
-
-        # Print for how many points the softplus Lipschitz coefficient improves upon the default of 1
-        if not self.args.silent and self.args.improved_softplus_lip:
-            print('- Number of softplus Lipschitz coefficients')
-            for i in [1, 0.75, 0.5, 0.25, 0.1, 0.05, 0.01]:
-                print(f'-- Below value of {i}: {np.sum(softplus_lip <= i)}')
-
-        # Negative is violation
-        if self.args.exp_certificate:
-            V_ibp = Vdiff_ibp + mesh_decrease * Kprime
-        else:
-            V_ibp = Vdiff_ibp + mesh_decrease * Kprime * softplus_lip
+        V_ibp, Vdiff_ibp, Vdiff_center, ExpV_xPlus, softplus_lip = self.compute_expectation_next_state(x_decrease, Vx_lb_decrease, Vx_center_decrease, actions, Kprime,
+                                                                                                       mesh_decrease)
 
         # Determine indices of violations
         violation_idxs = V_ibp >= 0
@@ -576,7 +561,9 @@ class Verifier:
             violation_idxs) == len(softplus_lip)
 
         x_decrease_violations = x_decrease[violation_idxs]
+        Vx_lb_decrease_violations = Vx_lb_decrease[violation_idxs]
         Vx_center_violations = Vx_center_decrease[violation_idxs]
+        mesh_decrease_violations = mesh_decrease[violation_idxs]
         Vdiff_center_violations = Vdiff_center[violation_idxs]
         Vdiff_ibp_violations = Vdiff_ibp[violation_idxs]
         softplus_lip_violations = softplus_lip[violation_idxs]
@@ -585,6 +572,18 @@ class Verifier:
         if not self.args.silent and len(Vdiff_ibp) > 0:
             print("-- Value of E[V(x_{k+1})] - V_lb(x_k) on lower bounds: "
                   f"min={np.min(Vdiff_ibp):.8f}; mean={np.mean(Vdiff_ibp):.8f}; max={np.max(Vdiff_ibp):.8f}")
+
+        actions_min = np.tile(self.env.action_space.low, (len(x_decrease_violations), 1))
+        actions_max = np.tile(self.env.action_space.high, (len(x_decrease_violations), 1))
+
+        ### Check if these violations can be mitigated by 'policy patching'
+        V_ibp_Umin, _, _, _, _ = self.compute_expectation_next_state(x_decrease_violations, Vx_lb_decrease_violations, Vx_center_violations, actions_min, Kprime_no_policy,
+                                                                     mesh_decrease_violations)
+        V_ibp_Umax, _, _, _, _ = self.compute_expectation_next_state(x_decrease_violations, Vx_lb_decrease_violations, Vx_center_violations, actions_max, Kprime_no_policy,
+                                                                     mesh_decrease_violations)
+
+        violation_idxs2 = np.minimum(V_ibp_Umin, V_ibp_Umax) >= 0
+        print(f'-- {len(x_decrease_violations[violation_idxs2])} violations remain after min/max policy patching')
 
         ### Check which violations are also hard violations ###
         if self.args.exp_certificate:
@@ -659,13 +658,58 @@ class Verifier:
 
         return x_decrease_violations, len(hardViolations), violation_weights, hard_violation_idxs, suggested_mesh_expDecr
 
-    def check_initial_states(self, grid, Kprime, lip_certificate, compare_with_lip=False):
+    def compute_expectation_next_state(self, x_decrease, Vx_lb_decrease, Vx_center_decrease, actions, Kprime, mesh_decrease):
+        # TODO
+
+        ### Calculate E[V_{k+1}] ###
+
+        # Initialize array
+        ExpV_xPlus = np.zeros(len(x_decrease))
+
+        # Create batches
+        num_batches = np.ceil(len(x_decrease) / self.args.verify_batch_size).astype(int)
+        starts = np.arange(num_batches) * self.args.verify_batch_size
+        ends = np.minimum(starts + self.args.verify_batch_size, len(x_decrease))
+
+        for (i, j) in tqdm(zip(starts, ends), total=len(starts), desc='Compute E[V(x_{k+1})]'):
+            x = x_decrease[i:j, :self.env.state_dim]
+            u = actions[i:j]
+
+            ExpV_xPlus[i:j] = self.vmap_expectation_Vx_plus(self.V_state, jax.lax.stop_gradient(self.V_state.params), x,
+                                                            u, self.noise_lb, self.noise_ub, self.noise_int_ub)
+
+        ### Calculate differences in certificate value ###
+        Vdiff_ibp = ExpV_xPlus - Vx_lb_decrease
+        Vdiff_center = ExpV_xPlus - Vx_center_decrease
+
+        if self.args.improved_softplus_lip:
+            softplus_lip = np.maximum((1 - np.exp(-np.where(Kprime * mesh_decrease * np.exp(-Vx_lb_decrease) < 1,
+                                                            Vx_lb_decrease, Vx_center_decrease))), 1e-4)
+        else:
+            softplus_lip = np.ones(len(Vdiff_ibp))
+
+        # Print for how many points the softplus Lipschitz coefficient improves upon the default of 1
+        if not self.args.silent and self.args.improved_softplus_lip:
+            print('- Number of softplus Lipschitz coefficients')
+            for i in [1, 0.75, 0.5, 0.25, 0.1, 0.05, 0.01]:
+                print(f'-- Below value of {i}: {np.sum(softplus_lip <= i)}')
+
+        # Negative is violation
+        if self.args.exp_certificate:
+            V_ibp = Vdiff_ibp + mesh_decrease * Kprime
+        else:
+            V_ibp = Vdiff_ibp + mesh_decrease * Kprime * softplus_lip
+
+        return V_ibp, Vdiff_ibp, Vdiff_center, ExpV_xPlus, softplus_lip
+
+    def check_initial_states(self, grid, lip_policy, lip_certificate, compare_with_lip=False):
         '''
         Check the initial state condition. 
 
         :param grid: Verification grid. 
         :param Kprime: Combined Lipschitz constant.
-        :param lip_certificate: Lipschitz constant of the certificate network. 
+        :param lip_policy: Lipschitz constant of the policy network.
+        :param lip_certificate: Lipschitz constant of the certificate network.
         :param compare_with_lip: Compare IBP and Lipschitz.
         :return:
            - x_init_vio_IBP : list of violations of the initial condition.
@@ -755,13 +799,14 @@ class Verifier:
 
         return x_init_vio_IBP, x_init_vioNumHard, weights_init, V_init > 0, suggested_mesh_init, np.max(V_init_ub) if len(V_init_ub) > 0 else 0
 
-    def check_unsafe_state(self, grid, Kprime, lip_certificate, compare_with_lip=False):
+    def check_unsafe_state(self, grid, lip_policy, lip_certificate, compare_with_lip=False):
         '''
         Check the unsafe state condition. 
 
         :param grid: Verification grid. 
         :param Kprime: Combined Lipschitz constant.
-        :param lip_certificate:  Lipschitz constant of the certificate network. 
+        :param lip_policy: Lipschitz constant of the policy network.
+        :param lip_certificate: Lipschitz constant of the certificate network.
         :param compare_with_lip: Compare IBP and Lipschitz.
         :return:
            - x_unsafe_vio_IBP : list of violations of the unsafe condition.
