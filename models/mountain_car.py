@@ -133,7 +133,7 @@ class MountainCar(BaseEnvironment, gym.Env):
         position = self.state[0]
         velocity = self.state[1]
 
-        velocity = self.friction * velocity + self.delta * (force * self.power - self.constant1 * np.cos(3 * position)) * self.v_scaling + 0.01 * w
+        velocity = self.friction * velocity + self.delta * (force[0] * self.power - self.constant1 * np.cos(3 * position)) * self.v_scaling + 0.01 * w[0]
         velocity = np.clip(velocity, -self.max_speed, self.max_speed)
         position += self.delta * velocity / self.v_scaling
         position = np.clip(position, self.min_position, self.max_position)
@@ -167,7 +167,7 @@ class MountainCar(BaseEnvironment, gym.Env):
         position = state[0]
         velocity = state[1]
 
-        velocity = self.friction * velocity + self.delta * (force * self.power - self.constant1 * jnp.cos(3 * position)) * self.v_scaling + 0.01 * w
+        velocity = self.friction * velocity + self.delta * (force[0] * self.power - self.constant1 * jnp.cos(3 * position)) * self.v_scaling + 0.01 * w[0]
         velocity = jnp.clip(velocity, -self.max_speed, self.max_speed)
         position += self.delta * velocity / self.v_scaling
         position = jnp.clip(position, self.min_position, self.max_position)

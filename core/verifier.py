@@ -557,17 +557,17 @@ class Verifier:
 
         # Determine indices of violations
         violation_idxs = V_ibp >= 0
+        Vdiff_ibp_violations = Vdiff_ibp[violation_idxs]
+        Vdiff_center_violations = Vdiff_center[violation_idxs]
 
         assert len(x_decrease) == len(Vx_lb_decrease) == len(mesh_decrease) == len(Vx_center_decrease) == len(
-            actions) == len(ExpV_xPlus) == len(Vdiff_ibp) == len(Vdiff_center) == len(V_ibp) == len(
-            violation_idxs) == len(softplus_lip)
+            actions) == len(Vdiff_ibp) == len(Vdiff_center) == len(V_ibp) == len(violation_idxs)
 
+        # Keep only the violating cells
         x_decrease_violations = x_decrease[violation_idxs]
         Vx_lb_decrease_violations = Vx_lb_decrease[violation_idxs]
         Vx_center_violations = Vx_center_decrease[violation_idxs]
         mesh_decrease_violations = mesh_decrease[violation_idxs]
-        Vdiff_center_violations = Vdiff_center[violation_idxs]
-        Vdiff_ibp_violations = Vdiff_ibp[violation_idxs]
         softplus_lip_violations = softplus_lip[violation_idxs]
 
         print(f'- [IBP] {len(x_decrease_violations):,} expected decrease violations (out of {len(x_decrease):,})')
@@ -575,17 +575,51 @@ class Verifier:
             print("-- Value of E[V(x_{k+1})] - V_lb(x_k) on lower bounds: "
                   f"min={np.min(Vdiff_ibp):.8f}; mean={np.mean(Vdiff_ibp):.8f}; max={np.max(Vdiff_ibp):.8f}")
 
+        #####
+        ### Check which violations are also hard violations ###
+        if self.args.exp_certificate:
+            C = Vx_center_violations < - np.log(1 - self.args.probability_bound)
+            hard_violation_idxs = (Vdiff_center_violations > 0) * C
+        else:
+            C = Vx_center_violations < 1 / (1 - self.args.probability_bound)
+            hard_violation_idxs = (Vdiff_center_violations + self.args.mesh_refine_min * (
+                    Kprime * softplus_lip_violations) > 0) * C
+        print(f'\n- Check hard expected decrease violations at {np.sum(C):,} points (out of {len(Vx_center_violations):,} violations)')
+
+        if self.args.plot_intermediate:
+            filename = f"hard_expected_decrease_counterexamples_iteration={iteration}_NO-PATCH"
+            plot_dataset(self.env, additional_data=x_decrease_violations[hard_violation_idxs][:, 0:3],
+                         folder=self.args.output_folder, filename=filename, title=~self.args.presentation_plots)
+
+        #####
+
         actions_min = np.tile(self.env.action_space.low, (len(x_decrease_violations), 1))
         actions_max = np.tile(self.env.action_space.high, (len(x_decrease_violations), 1))
 
-        ### Check if these violations can be mitigated by 'policy patching'
-        V_ibp_Umin, _, _, _, _ = self.compute_expectation_next_state(x_decrease_violations, Vx_lb_decrease_violations, Vx_center_violations, actions_min, Kprime_no_policy,
-                                                                     mesh_decrease_violations)
-        V_ibp_Umax, _, _, _, _ = self.compute_expectation_next_state(x_decrease_violations, Vx_lb_decrease_violations, Vx_center_violations, actions_max, Kprime_no_policy,
-                                                                     mesh_decrease_violations)
+        print('min/max action:', self.env.action_space.low, self.env.action_space.high)
 
+        ### Check if these violations can be mitigated by 'policy patching'
+        V_ibp_Umin, Vdiff_ibp_Umin, Vdiff_center_Umin, _, _ = self.compute_expectation_next_state(x_decrease_violations, Vx_lb_decrease_violations, Vx_center_violations,
+                                                                                                  actions_min, Kprime_no_policy, mesh_decrease_violations)
+        V_ibp_Umax, Vdiff_ibp_Umax, Vdiff_center_Umax, _, _ = self.compute_expectation_next_state(x_decrease_violations, Vx_lb_decrease_violations, Vx_center_violations,
+                                                                                                  actions_max, Kprime_no_policy, mesh_decrease_violations)
+
+        # Determine for which input the 'best' expected decrease is achieved
+        V_ibp_argmin = np.argmin(np.vstack((V_ibp_Umin, V_ibp_Umax)), axis=0)
         violation_idxs2 = np.minimum(V_ibp_Umin, V_ibp_Umax) >= 0
+
+        arrayA = ((1 - V_ibp_argmin) * Vdiff_center_Umin + V_ibp_argmin * Vdiff_center_Umax)[violation_idxs2]
+        arrayB = (Vdiff_center_violations)[violation_idxs2]
+
+        Vdiff_ibp_violations = np.minimum((1 - V_ibp_argmin) * Vdiff_ibp_Umin + V_ibp_argmin * Vdiff_ibp_Umax, Vdiff_ibp_violations)[violation_idxs2]
+        Vdiff_center_violations = np.minimum((1 - V_ibp_argmin) * Vdiff_center_Umin + V_ibp_argmin * Vdiff_center_Umax, Vdiff_center_violations)[violation_idxs2]
         print(f'-- {len(x_decrease_violations[violation_idxs2])} violations remain after min/max policy patching')
+
+        x_decrease_violations = x_decrease_violations[violation_idxs2]
+        Vx_lb_decrease_violations = Vx_lb_decrease_violations[violation_idxs2]
+        Vx_center_violations = Vx_center_violations[violation_idxs2]
+        mesh_decrease_violations = mesh_decrease_violations[violation_idxs2]
+        softplus_lip_violations = softplus_lip_violations[violation_idxs2]
 
         ### Check which violations are also hard violations ###
         if self.args.exp_certificate:
@@ -596,6 +630,11 @@ class Verifier:
             hard_violation_idxs = (Vdiff_center_violations + self.args.mesh_refine_min * (
                     Kprime * softplus_lip_violations) > 0) * C
         print(f'\n- Check hard expected decrease violations at {np.sum(C):,} points (out of {len(Vx_center_violations):,} violations)')
+
+        vioA = (arrayA > 0) * C
+        vioB = (arrayB > 0) * C
+        print('Violations with patched policy: ', np.sum(vioA))
+        print('Violations with neural policy:', np.sum(vioB))
 
         hardViolations = Vdiff_center_violations[hard_violation_idxs]
         print(f'- {len(hardViolations):,} hard expected decrease violations (out of {len(x_decrease_violations):,})')
@@ -644,19 +683,19 @@ class Verifier:
 
         if self.args.plot_intermediate:
             filename = f"hard_expected_decrease_counterexamples_iteration={iteration}"
-            plot_dataset(self.env, additional_data=x_decrease[violation_idxs][hard_violation_idxs][:, 0:3],
+            plot_dataset(self.env, additional_data=x_decrease_violations[hard_violation_idxs][:, 0:3],
                          folder=self.args.output_folder, filename=filename, title=~self.args.presentation_plots)
 
-        if compare_with_lip:
-            Vdiff_lip = ExpV_xPlus - (Vx_center_decrease - lip_certificate * mesh_decrease)
-            assert Vdiff_ibp.shape == Vdiff_lip.shape
-            assert len(softplus_lip) == len(Vdiff_ibp) == len(Vdiff_lip)
-            V_lip = Vdiff_lip + mesh_decrease * Kprime * softplus_lip
-            x_decrease_vio_LIP = x_decrease[V_lip >= 0]
-            print(f'\n- [LIP] {len(x_decrease_vio_LIP):,} exp. decr. violations (out of {len(x_decrease):,} vertices)')
-            if len(V_lip) > 0:
-                print(f"-- Degree of violation over all points: min={np.min(V_lip):.8f}; "
-                      f"mean={np.mean(V_lip):.8f}; max={np.max(V_lip):.8f}")
+        # if compare_with_lip:
+        #     Vdiff_lip = ExpV_xPlus - (Vx_center_decrease - lip_certificate * mesh_decrease)
+        #     assert Vdiff_ibp.shape == Vdiff_lip.shape
+        #     assert len(softplus_lip) == len(Vdiff_ibp) == len(Vdiff_lip)
+        #     V_lip = Vdiff_lip + mesh_decrease * Kprime * softplus_lip
+        #     x_decrease_vio_LIP = x_decrease[V_lip >= 0]
+        #     print(f'\n- [LIP] {len(x_decrease_vio_LIP):,} exp. decr. violations (out of {len(x_decrease):,} vertices)')
+        #     if len(V_lip) > 0:
+        #         print(f"-- Degree of violation over all points: min={np.min(V_lip):.8f}; "
+        #               f"mean={np.mean(V_lip):.8f}; max={np.max(V_lip):.8f}")
 
         return x_decrease_violations, len(hardViolations), violation_weights, hard_violation_idxs, suggested_mesh_expDecr
 

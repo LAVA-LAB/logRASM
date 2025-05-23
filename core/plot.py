@@ -139,7 +139,7 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
     return
 
 
-def plot_traces(env, Policy_state, key, num_traces=10, len_traces=1000, folder=False, filename=False, title=True):
+def plot_traces(env, Policy_state, key, num_traces=100, len_traces=1000, folder=False, filename=False, title=True):
     '''
     Plot simulated traces under the given policy.
 
@@ -170,7 +170,7 @@ def plot_traces(env, Policy_state, key, num_traces=10, len_traces=1000, folder=F
 
         key, subkey = jax.random.split(key)
 
-        x = env.init_space.sample_single(subkey)
+        x = env.state_space.sample_single(subkey)
         traces[0, i] = x
 
         succes = False
@@ -673,7 +673,7 @@ def plot_heatmap(env, coordinates, values, folder=False, filename=False, title=T
     data = pd.DataFrame(data={'x': coordinates[:, plot_dim[0]], 'y': coordinates[:, plot_dim[1]], 'z': values})
     data = data.pivot(index='y', columns='x', values='z')[::-1]
     sns.heatmap(data)
-    
+
     # Reformat axis labels to avoid floating point issues in axis labels
     #  (based on https://github.com/mwaskom/seaborn/issues/1005#issue-175150095)
     fmt = '{:0.3f}'
@@ -687,7 +687,7 @@ def plot_heatmap(env, coordinates, values, folder=False, filename=False, title=T
         yticklabels.append(item)
     ax.set_xticklabels(xticklabels)
     ax.set_yticklabels(yticklabels)
-  
+
     if folder and filename:
         if Path(folder).exists():
             # Save figure
