@@ -25,16 +25,11 @@ class MountainCar(BaseEnvironment, gym.Env):
 
         self.variable_names = ['position', 'velocity']
 
-        # Number of discrete time steps to lump together
-        # Note: This is an experimental feature, which is not accounted for in the Lipschitz constant or by the verifier yet!
-        self.lump_steps = int(args.lump_steps)
-        print(f'- Number of steps lumped together in dynamics: {self.lump_steps}')
-
         # Time discretization step
-        self.delta = 10 / self.lump_steps
+        self.delta = 10
 
-        self.min_action = np.array([-1.0] * self.lump_steps)
-        self.max_action = np.array([1.0] * self.lump_steps)
+        self.min_action = np.array([-1.0])
+        self.max_action = np.array([1.0])
         self.min_position = -1.2 - 0.2
         self.max_position = 0.6
         self.v_scaling = 45  # Scaled from the original, which is 0.07
@@ -74,14 +69,14 @@ class MountainCar(BaseEnvironment, gym.Env):
         #   or normalised as max_torque == 2 by default. Ignoring the issue here as the default settings are too old
         #   to update to follow the openai gym api
         self.action_space = spaces.Box(
-            low=self.min_action, high=self.max_action, shape=(self.lump_steps,), dtype=np.float32
+            low=self.min_action, high=self.max_action, shape=(1,), dtype=np.float32
         )
 
         # Set observation / state space
         self.state_space = RectangularSet(low=self.low_state, high=self.high_state, dtype=np.float32)
 
         # Set support of noise distribution (which is triangular, zero-centered)
-        high = np.array([1] * self.lump_steps, dtype=np.float32)
+        high = np.array([1], dtype=np.float32)
         self.noise_space = spaces.Box(low=-high, high=high, dtype=np.float32)
         self.noise_dim = len(high)
 
@@ -138,12 +133,10 @@ class MountainCar(BaseEnvironment, gym.Env):
         position = self.state[0]
         velocity = self.state[1]
 
-        for i in range(self.lump_steps):
-            velocity = self.friction * velocity + self.delta * (
-                    force[i] * self.power - self.constant1 * np.cos(3 * position)) * self.v_scaling + 0.01 * w[i]
-            velocity = np.clip(velocity, -self.max_speed, self.max_speed)
-            position += self.delta * velocity / self.v_scaling
-            position = np.clip(position, self.min_position, self.max_position)
+        velocity = self.friction * velocity + self.delta * (force * self.power - self.constant1 * np.cos(3 * position)) * self.v_scaling + 0.01 * w
+        velocity = np.clip(velocity, -self.max_speed, self.max_speed)
+        position += self.delta * velocity / self.v_scaling
+        position = np.clip(position, self.min_position, self.max_position)
 
         # Put together state
         self.state = np.array([position, velocity])
@@ -174,12 +167,10 @@ class MountainCar(BaseEnvironment, gym.Env):
         position = state[0]
         velocity = state[1]
 
-        for i in range(self.lump_steps):
-            velocity = self.friction * velocity + self.delta * (
-                    force[i] * self.power - self.constant1 * jnp.cos(3 * position)) * self.v_scaling + 0.01 * w[i]
-            velocity = jnp.clip(velocity, -self.max_speed, self.max_speed)
-            position += self.delta * velocity / self.v_scaling
-            position = jnp.clip(position, self.min_position, self.max_position)
+        velocity = self.friction * velocity + self.delta * (force * self.power - self.constant1 * jnp.cos(3 * position)) * self.v_scaling + 0.01 * w
+        velocity = jnp.clip(velocity, -self.max_speed, self.max_speed)
+        position += self.delta * velocity / self.v_scaling
+        position = jnp.clip(position, self.min_position, self.max_position)
 
         # Put together state
         state = jnp.array([position, velocity])
