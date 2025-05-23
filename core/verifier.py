@@ -318,6 +318,8 @@ class Verifier:
         '''
         Compute the combined Lipschitz constant Kprime.
 
+        :param lip_policy: Lipschitz constant of the policy network.
+        :param lip_certificate: Lipschitz constant of the certificate network.
         :return:
            - Kprime: combined Lipschitz constant of x \mapsto V(f(x, pi(x), noise)).
         '''
@@ -497,7 +499,7 @@ class Verifier:
 
         # Compute combined Lipschitz constant
         Kprime = self.get_Kprime(lip_policy, lip_certificate)
-        Kprime_no_policy = self.get_Kprime(lip_policy, 0)
+        Kprime_no_policy = self.get_Kprime(0, lip_certificate)
 
         batch_size = self.args.forward_pass_batch_size
 

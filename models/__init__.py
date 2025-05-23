@@ -3,6 +3,7 @@ from .collision_avoidance import CollisionAvoidance
 from .drone4D import Drone4D
 from .linearsystem import LinearSystem
 from .linearsystem4D import LinearSystem4D
+from .mountain_car import MountainCar
 from .pendulum import Pendulum
 from .planar_robot import PlanarRobot
 from .triple_integrator import TripleIntegrator
@@ -23,6 +24,8 @@ def get_model_fun(model_name):
         envfun = PlanarRobot
     elif model_name == 'Drone4D':
         envfun = Drone4D
+    elif model_name == 'MyMountainCar':
+        envfun = MountainCar
     else:
         envfun = False
         assert False, f"Unknown model name: {model_name}"
