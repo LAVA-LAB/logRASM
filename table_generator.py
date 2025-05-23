@@ -14,10 +14,13 @@ parser.add_argument('--folders', type=str, required=False,
                     help="Can be either 'main', 'hard', 'sb3' (for stablebaselines), or a manual folder from which to parse all results")
 parser.add_argument('--timeout', type=int, required=False, default=1800,
                     help="Timeout (in seconds) that was used for the experiments to parse into the table")
-parser.add_argument('--max_allowed_timeouts', type=int, required=False, default=2,
+parser.add_argument('--max_allowed_timeouts', type=int, required=False, default=3,
                     help="Above this number of timeouts, the instance will be considered as a timeout overall (and marked as '--' in the table).")
 
 parser = parser.parse_args()
+
+parser.folders = 'hard'
+parser.timeout = 1800
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -25,7 +28,7 @@ SB3_MODE = False
 if parser.folders == 'main':
     input_folders = ['main']
 elif parser.folders == 'hard':
-    input_folders = ['TripleIntegrator', 'PlanarRobot', 'Drone4D']
+    input_folders = ['TripleIntegrator', 'PlanarRobot', 'Drone4D']  # TODO: Revert to Drone4D folder
 elif parser.folders == 'sb3':
     input_folders = ['linsys_sb', 'linsys1_sb', 'pendulum_sb', 'collision_sb']
     SB3_MODE = True
@@ -33,6 +36,25 @@ else:
     input_folders = [parser.folders]
 
 all_models = ['linear-sys', 'linear-sys (hard layout)', 'pendulum', 'collision-avoid', 'triple-integrator', 'planar-robot', 'drone-4d']
+
+all_models_x_dim = {
+    'linear-sys': 2,
+    'linear-sys (hard layout)': 2,
+    'pendulum': 2,
+    'collision-avoid': 2,
+    'triple-integrator': 3,
+    'planar-robot': 3,
+    'drone-4d': 4
+}
+all_models_u_dim = {
+    'linear-sys': 2,
+    'linear-sys (hard layout)': 2,
+    'pendulum': 2,
+    'collision-avoid': 2,
+    'triple-integrator': 1,
+    'planar-robot': 2,
+    'drone-4d': 4
+}
 
 # Get all result files from the specified folders
 cwd = os.getcwd()
@@ -59,6 +81,7 @@ if not SB3_MODE:
     for folder in subfolders:
         info_file = Path(folder, 'info.csv')
         args_file = Path(folder, 'args.csv')
+        print(info_file)
         info = pd.read_csv(info_file, index_col=0)['info']
         args = pd.read_csv(args_file, index_col=0)['arguments']
 
@@ -89,12 +112,14 @@ if not SB3_MODE:
         else:
             case = dic_all_cases[3]
 
+        p = float(info['probability_bound'])
+        if p == 0.95 or p == 0.99999:
+            continue
+
         if benchmark not in dic:
             dic[benchmark] = {}
         if case not in dic[benchmark]:
             dic[benchmark][case] = {}
-
-        p = float(info['probability_bound'])
 
         # Store probability bound
         if p not in dic_all_prob_bounds:
@@ -129,9 +154,9 @@ if not SB3_MODE:
     latex = [
         '\\begin{tabular}{@{}ll' + ''.join(['l'] * nBounds) + '@{}}',
         '\\toprule',
-        '& & \\multicolumn{' + str(nBounds) + '}{c}{{Probability bound $\\rho$}} \\\\',
+        '& & & & \\multicolumn{' + str(nBounds) + '}{c}{{Probability bound $\\rho$}} \\\\',
         '\\cmidrule(lr){3-' + str(3 + nBounds - 1) + '}',
-        'Benchmark & Learner-verifier & ' + ' & '.join(list(np.array(dic_all_prob_bounds, dtype=str))) + '\\\\',
+        'Benchmark & d & m & Learner-verifier &  ' + ' & '.join(list(np.array(dic_all_prob_bounds, dtype=str))) + '\\\\',
     ]
 
     for model in all_models:
@@ -142,10 +167,15 @@ if not SB3_MODE:
                     # Add line for latex table
                     if i == 0:
                         nCases_current_model = len(dic[model])
-                        line = ['\\midrule\\multirow{' + str(nCases_current_model) + '}{*}{\\texttt{' + model + '}}']
+
+                        x_dim = str(all_models_x_dim[model])
+                        u_dim = str(all_models_u_dim[model])
+
+                        line = ['\\midrule\\multirow{' + str(
+                            nCases_current_model) + '}{*}{\\texttt{' + model + '}} & \multirow{4}{*}{{' + x_dim + '}} & \multirow{4}{*}{{' + u_dim + '}}']
                     else:
-                        line = ['']
-                    line += [' & ' + case]
+                        line = ['& &']
+                    line += [' & \\texttt{' + case + '}']
 
                     i += 1
 
@@ -158,14 +188,14 @@ if not SB3_MODE:
                                 dic[model][case][p]['timeouts'] <= parser.max_allowed_timeouts and \
                                 any(np.array(dic[model][case][p]['success'], dtype=bool) == True):
 
-                            times = dic[model][case][p]['runtime']
+                            times = np.array(dic[model][case][p]['runtime'])[dic[model][case][p]['success']]
                             time = int(np.round(np.mean(times)))
                             std = int(np.round(np.std(times)))
                             row += [f'{time} (pm {std})']
 
                             # Add entry to latex table
                             digits = int(np.ceil(np.log10(time)))
-                            zeros_to_add = max(0, 3 - digits)
+                            zeros_to_add = max(0, 4 - digits)
                             phantom = ''.join(['0'] * zeros_to_add)  # Phantoms to improve alignment
                             stars = ''.join(['*'] * dic[model][case][p]['timeouts'])  # Each star represents a timeout
                             line += [' & $\\hphantom{' + phantom + '}$$' + str(time) + ' \\,\\scriptstyle{\\pm ' + str(std) + '}$${}^{' + stars + '}$ ']

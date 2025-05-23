@@ -308,16 +308,16 @@ class Verifier:
         if self.args.linfty and self.args.split_lip:
             norm = 'L_infty'
             Kprime = lip_certificate * (
-                    self.env.lipschitz_f_linfty_A + self.env.lipschitz_f_linfty_B * lip_policy)  # + 1)
+                    self.env.lipschitz_f_linfty_A + self.env.lipschitz_f_linfty_B * lip_policy)
         elif self.args.split_lip:
             norm = 'L1'
-            Kprime = lip_certificate * (self.env.lipschitz_f_l1_A + self.env.lipschitz_f_l1_B * lip_policy)  # + 1)
+            Kprime = lip_certificate * (self.env.lipschitz_f_l1_A + self.env.lipschitz_f_l1_B * lip_policy)
         elif self.args.linfty:
             norm = 'L_infty'
-            Kprime = lip_certificate * (self.env.lipschitz_f_linfty * (lip_policy + 1))  # + 1)
+            Kprime = lip_certificate * (self.env.lipschitz_f_linfty * (lip_policy + 1))
         else:
             norm = 'L1'
-            Kprime = lip_certificate * (self.env.lipschitz_f_l1 * (lip_policy + 1))  # + 1)
+            Kprime = lip_certificate * (self.env.lipschitz_f_l1 * (lip_policy + 1))
 
         if not self.args.silent:
             print(f'- Overall Lipschitz coefficient K = {Kprime:.3f} ({norm})')
