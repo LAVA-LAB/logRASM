@@ -247,19 +247,26 @@ if __name__ == "__main__":
             print(f' - Certificate Lipschitz: {lip_certificate:.2f}')
             print(f' - Policy Lipschitz: {lip_policy:.2f}')
 
+        loss_multiplier = 1
+
         for j in tqdm(range(args.epochs), desc=f"Learner epochs (iteration {i})"):
             for k in range(num_batches):
 
                 # Main train step function: Defines one loss function for the provided batch of train data and minimizes it
-                V_grads, Policy_grads, infos, key, samples_in_batch = learn.train_step(
+                loss_val, V_grads, Policy_grads, infos, key, samples_in_batch = learn.train_step(
                     key=key,
                     V_state=V_state,
                     Policy_state=Policy_state,
                     counterexamples=counterx_buffer.data[:, :-1],
                     mesh_loss=args.mesh_loss,
                     probability_bound=args.probability_bound,
-                    expDecr_multiplier=args.expDecr_multiplier
+                    expDecr_multiplier=args.expDecr_multiplier,
+                    loss_multiplier=loss_multiplier
                 )
+
+                if args.normalize_loss:
+                    loss_multiplier = min(1 / loss_val, 1000)  # Normalize the loss such that the previous batch would have had a total loss of 1.
+                    print(loss_multiplier)
 
                 fail = True
                 if np.isnan(infos['0. total']):
@@ -292,17 +299,17 @@ if __name__ == "__main__":
                     for ky, info in infos.items():
                         print(f' - {ky}:', info)
 
-                    print('(!!!) Error: Failure detected, so terminate script')
-                    sys.exit()
+                        print('(!!!) Error: Failure detected, so terminate script')
+                        sys.exit()
+
+            if not args.silent:
+                print(f'Number of times the learn.train_step function was compiled: {learn.train_step._cache_size()}')
+                print(f'\nLoss components in last train step:')
+                for ky, info in infos.items():
+                    print(f' - {ky}:', info)  # {info:.8f}')
 
         if i >= 1 and args.debug_train_step:
             learn.debug_train_step(args, samples_in_batch, iteration=i)
-
-        if not args.silent:
-            print(f'Number of times the learn.train_step function was compiled: {learn.train_step._cache_size()}')
-            print(f'\nLoss components in last train step:')
-            for ky, info in infos.items():
-                print(f' - {ky}:', info)  # {info:.8f}')
 
         LOGG.append_time(key=f'iter{i}_learner', value=LOGG.get_timer_value())
         LOGG.append_Lipschitz(Policy_state, V_state, iteration=i, silent=args.silent)

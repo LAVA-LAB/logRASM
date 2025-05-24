@@ -113,6 +113,8 @@ def parse_arguments(linfty, datetime, cwd):
                         help="When the policy Lipschitz coefficient is below this value, then the loss is zero")
     parser.add_argument('--expDecr_multiplier', type=float, default=1,
                         help="Multiply the weighted counterexample expected decrease loss by this value")
+    parser.add_argument('--normalize_loss', action=argparse.BooleanOptionalAction, default=False,
+                        help="If True, normalize the loss such that the previous batch would have had a total loss of 1")
     parser.add_argument('--debug_train_step', action=argparse.BooleanOptionalAction, default=False,
                         help="If True, generate additional plots for the samples used in the last train step of an iteration")
     parser.add_argument('--auxiliary_loss', type=int, default=0,

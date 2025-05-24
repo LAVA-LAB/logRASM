@@ -139,7 +139,8 @@ class Learner:
                    counterexamples,
                    mesh_loss,
                    probability_bound,
-                   expDecr_multiplier
+                   expDecr_multiplier,
+                   loss_multiplier,
                    ):
         '''
         Perform one step of training the neural network.
@@ -150,8 +151,10 @@ class Learner:
         :param counterexamples: Current list of counterexamples.
         :param mesh_loss: float, determining the largest mesh for which a loss of 0 implies that the condition is satisfied. 
         :param probability_bound: The probability bound of the specification that we aim to certify. 
-        :param expDecr_multiplier: Multiplier of the expected decrease loss. 
+        :param expDecr_multiplier: Multiplier of the expected decrease loss.
+        :param loss_multiplier: Multiplier of the total loss.
         :return:
+           - loss_val: Total loss value
            - V_grads: Gradients of the certificate network. 
            - Policy_grads: Gradients of the policy network. 
            - infos: Dictionary, giving the total loss as well as each component (total, init, unsafe, expDecrease_mean, expDecrease_max (not used), Lipschitz (not used)).
@@ -333,9 +336,10 @@ class Learner:
             loss_aux = self.auxiliary_loss * (loss_min_target + loss_min_init + loss_min_unsafe)
 
             # Define total loss
-            loss_total = (loss_init + loss_unsafe + loss_exp_decrease_mean + loss_exp_decrease_max + loss_lipschitz + loss_aux)
+            loss_total = loss_multiplier * (loss_init + loss_unsafe + loss_exp_decrease_mean + loss_exp_decrease_max + loss_lipschitz + loss_aux)
 
             infos = {
+                'multiplier': loss_multiplier,
                 '0. total': loss_total,
                 '1. init': loss_init,
                 '2. unsafe': loss_unsafe,
@@ -365,7 +369,7 @@ class Learner:
             'counterx_decrease': cx_bool_decrease
         }
 
-        return V_grads, Policy_grads, infos, key, samples_in_batch
+        return loss_val, V_grads, Policy_grads, infos, key, samples_in_batch
 
     def debug_train_step(self, args, samples_in_batch, iteration):
         '''
