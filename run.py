@@ -265,7 +265,8 @@ if __name__ == "__main__":
                 )
 
                 if args.normalize_loss:
-                    loss_multiplier = min(1 / loss_val, 1000)  # Normalize the loss such that the previous batch would have had a total loss of 1.
+                    loss_multiplier = min(max((loss_multiplier + 1 / loss_val) / 2, 1 / 1000, ),
+                                          1000)  # Normalize the loss such that the previous batch would have had a total loss of 1.
                     print(loss_multiplier)
 
                 fail = True
@@ -303,6 +304,8 @@ if __name__ == "__main__":
                         sys.exit()
 
             if not args.silent:
+                print('loss_val:', loss_val)
+
                 print(f'Number of times the learn.train_step function was compiled: {learn.train_step._cache_size()}')
                 print(f'\nLoss components in last train step:')
                 for ky, info in infos.items():
