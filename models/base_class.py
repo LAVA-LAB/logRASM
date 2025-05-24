@@ -1,6 +1,7 @@
 from functools import partial
 
 import jax
+import jax.numpy as jnp
 import numpy as np
 from gymnasium import spaces
 from jax import jit
@@ -45,12 +46,23 @@ class BaseEnvironment:
         self.lipschitz_f_linfty_B = float(np.max(np.sum(self.B, axis=1)))
 
     @partial(jit, static_argnums=(0,))
+    def sample_triangular_noise_jax(self, key):
+        return jax.random.triangular(key, self.noise_space.low * jnp.ones(self.noise_dim), jnp.zeros(self.noise_dim),
+                                     self.noise_space.high * jnp.ones(self.noise_dim))
+
+    def sample_triangular_noise_numpy(self, size=None):
+        return np.random.triangular(self.noise_space.low * np.ones(self.noise_dim),
+                                    np.zeros(self.noise_dim),
+                                    self.noise_space.high * np.ones(self.noise_dim),
+                                    size)
+
+    @partial(jit, static_argnums=(0,))
     def step_noise_key(self, state, key, u):
         # Split RNG key
         key, subkey = jax.random.split(key)
 
         # Sample noise value
-        noise = self.sample_noise(subkey, size=(self.noise_dim,))
+        noise = self.sample_triangular_noise_jax(subkey)
 
         # Propagate dynamics
         state = self.step_base(state, u, noise)

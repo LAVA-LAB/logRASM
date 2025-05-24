@@ -88,17 +88,6 @@ class TripleIntegrator(BaseEnvironment, gym.Env):
 
         super(TripleIntegrator, self).__init__()
 
-    @partial(jit, static_argnums=(0,))
-    def sample_noise(self, key, size=None):
-        return jax.random.triangular(key, self.noise_space.low * jnp.ones(self.noise_dim), jnp.zeros(self.noise_dim),
-                                     self.noise_space.high * jnp.ones(self.noise_dim))
-
-    def sample_noise_numpy(self, size=None):
-        return np.random.triangular(self.noise_space.low * np.ones(self.noise_dim),
-                                    np.zeros(self.noise_dim),
-                                    self.noise_space.high * np.ones(self.noise_dim),
-                                    size)
-
     def step(self, u):
         '''
         Step in the gymnasium environment (only used for policy initialization with StableBaselines3).
@@ -107,7 +96,7 @@ class TripleIntegrator(BaseEnvironment, gym.Env):
         assert self.state is not None, "Call reset before using step method."
 
         u = np.clip(u, -self.max_torque, self.max_torque)
-        w = self.sample_noise_numpy()
+        w = self.sample_triangular_noise_numpy()
         self.state = self.A @ self.state + self.B @ u + self.W @ w
         self.last_u = u  # for rendering
 
@@ -173,7 +162,7 @@ class TripleIntegrator(BaseEnvironment, gym.Env):
         key, subkey = jax.random.split(key)
 
         # Sample noise value
-        noise = self.sample_noise(subkey, size=(self.noise_dim,))
+        noise = self.sample_triangular_noise_jax(subkey)
 
         costs = -1 + (state[0] ** 2) + (state[1] ** 2) + (state[2] ** 2)
 

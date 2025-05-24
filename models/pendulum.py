@@ -81,17 +81,6 @@ class Pendulum(BaseEnvironment, gym.Env):
 
         super(Pendulum, self).__init__()
 
-    @partial(jit, static_argnums=(0,))
-    def sample_noise(self, key, size=None):
-        return jax.random.triangular(key, self.noise_space.low * jnp.ones(self.noise_dim), jnp.zeros(self.noise_dim),
-                                     self.noise_space.high * jnp.ones(self.noise_dim))
-
-    def sample_noise_numpy(self, size=None):
-        return np.random.triangular(self.noise_space.low * np.ones(self.noise_dim),
-                                    np.zeros(self.noise_dim),
-                                    self.noise_space.high * np.ones(self.noise_dim),
-                                    size)
-
     def step(self, u):
         '''
         Step in the gymnasium environment (only used for policy initialization with StableBaselines3).
@@ -100,7 +89,7 @@ class Pendulum(BaseEnvironment, gym.Env):
         assert self.state is not None, "Call reset before using step method."
 
         u = 2 * np.clip(u, -self.max_torque, self.max_torque)
-        w = self.sample_noise_numpy()
+        w = self.sample_triangular_noise_numpy()
 
         x1 = (1 - self.b) * self.state[1] + (
                 -1.5 * self.G * np.sin(self.state[0] + np.pi) / (2 * self.l) +
@@ -179,7 +168,7 @@ class Pendulum(BaseEnvironment, gym.Env):
         key, subkey = jax.random.split(key)
 
         # Sample noise value
-        noise = self.sample_noise(subkey, size=(2,))
+        noise = self.sample_triangular_noise_jax(subkey)
 
         goal_reached = self.target_space.jax_contains(jnp.array([state]))[0]
         fail = self.unsafe_space.jax_contains(jnp.array([state]))[0]

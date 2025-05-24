@@ -153,6 +153,8 @@ def parse_arguments(linfty, datetime, cwd):
     ### ARGUMENTS TO EXPERIMENT WITH ###
     parser.add_argument('--local_refinement', action=argparse.BooleanOptionalAction, default=True,
                         help="If True, local grid refinements are performed")
+    parser.add_argument('--policy_patching', action=argparse.BooleanOptionalAction, default=True,
+                        help="If True, try to 'patch policies in the verifier to mitigate counterexamples")
     parser.add_argument('--perturb_counterexamples', action=argparse.BooleanOptionalAction, default=True,
                         help="If True, counterexamples are perturbed before being added to the counterexample buffer")
     parser.add_argument('--min_lip_policy_loss', type=float, default=0,

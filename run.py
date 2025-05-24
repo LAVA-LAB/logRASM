@@ -265,8 +265,8 @@ if __name__ == "__main__":
                 )
 
                 if args.normalize_loss:
-                    loss_multiplier = min(max(loss_multiplier * 1 / max(0.000001, loss_val), 1 / 1000, ),
-                                          1000)  # Normalize the loss such that the previous batch would have had a total loss of 1.
+                    loss_multiplier = min(max(loss_multiplier * min(max(1 / max(0.000001, loss_val), 1 / 10), 10),
+                                              1 / 1000, ), 1000)  # Normalize the loss such that the previous batch would have had a total loss of 1.
                     print(loss_multiplier)
 
                 fail = True

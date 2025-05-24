@@ -50,7 +50,7 @@ class PlanarRobot(BaseEnvironment, gym.Env):
         self.dvdy = 0
         self.dvdv = 1
         self.dvdu0 = 2 * self.delta
-        
+
         self.dxdu0 = 2 * self.delta ** 2
         self.dydu0 = 2 * self.delta ** 2
 
@@ -121,17 +121,6 @@ class PlanarRobot(BaseEnvironment, gym.Env):
 
         super(PlanarRobot, self).__init__()
 
-    @partial(jit, static_argnums=(0,))
-    def sample_noise(self, key, size=None):
-        return jax.random.triangular(key, self.noise_space.low * jnp.ones(self.noise_dim), jnp.zeros(self.noise_dim),
-                                     self.noise_space.high * jnp.ones(self.noise_dim))
-
-    def sample_noise_numpy(self, size=None):
-        return np.random.triangular(self.noise_space.low * np.ones(self.noise_dim),
-                                    np.zeros(self.noise_dim),
-                                    self.noise_space.high * np.ones(self.noise_dim),
-                                    size)
-
     def step(self, u):
         '''
         Step in the gymnasium environment (only used for policy initialization with StableBaselines3).
@@ -140,7 +129,7 @@ class PlanarRobot(BaseEnvironment, gym.Env):
         assert self.state is not None, "Call reset before using step method."
 
         u = jnp.clip(u, self.min_torque, self.max_torque)
-        w = self.sample_noise_numpy()
+        w = self.sample_triangular_noise_numpy()
 
         v = self.state[2] + self.delta * 2 * u[0]
         x = self.state[0] + self.delta * v * np.cos(np.pi * u[1]) + 0.01 * w[0]
@@ -214,7 +203,7 @@ class PlanarRobot(BaseEnvironment, gym.Env):
         key, subkey = jax.random.split(key)
 
         # Sample noise value
-        noise = self.sample_noise(subkey, size=(self.noise_dim,))
+        noise = self.sample_triangular_noise_jax(subkey)
 
         goal_reached = self.target_space.jax_contains(jnp.array([state]))[0]
         fail = self.unsafe_space.jax_contains(jnp.array([state]))[0]

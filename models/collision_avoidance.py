@@ -71,17 +71,6 @@ class CollisionAvoidance(BaseEnvironment, gym.Env):
 
         super(CollisionAvoidance, self).__init__()
 
-    @partial(jit, static_argnums=(0,))
-    def sample_noise(self, key, size=None):
-        return jax.random.triangular(key, self.noise_space.low * jnp.ones(2), jnp.zeros(self.noise_dim),
-                                     self.noise_space.high * jnp.ones(2))
-
-    def sample_noise_numpy(self, size=None):
-        return np.random.triangular(self.noise_space.low * np.ones(self.noise_dim),
-                                    np.zeros(self.noise_dim),
-                                    self.noise_space.high * np.ones(self.noise_dim),
-                                    size)
-
     def step(self, u):
         '''
         Step in the gymnasium environment (only used for policy initialization with StableBaselines3).
@@ -90,7 +79,7 @@ class CollisionAvoidance(BaseEnvironment, gym.Env):
         assert self.state is not None, "Call reset before using step method."
 
         u = np.clip(u, -self.max_torque, self.max_torque)
-        w = self.sample_noise_numpy()
+        w = self.sample_triangular_noise_numpy()
 
         obstacle1 = np.array((0, 1))
         force1 = np.array((0, 1))
@@ -173,7 +162,7 @@ class CollisionAvoidance(BaseEnvironment, gym.Env):
         key, subkey = jax.random.split(key)
 
         # Sample noise value
-        noise = self.sample_noise(subkey, size=(2,))
+        noise = self.sample_triangular_noise_jax(subkey)
 
         goal_reached = self.target_space.jax_contains(jnp.array([state]))[0]
         fail = self.unsafe_space.jax_contains(jnp.array([state]))[0]
