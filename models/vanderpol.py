@@ -11,6 +11,9 @@ from core.commons import RectangularSet, MultiRectangularSet
 from models.base_class import BaseEnvironment
 
 
+# python run.py --model VanDerPol --probability_bound 0.9 --pretrain_method PPO_JAX --pretrain_total_steps 1000000 --mesh_loss 0.0001 --exp_certificate --plot_intermediate --mesh_verify_grid_init 0.01 --expDecr_multiplier 10 --epochs 100 --eps_decrease 0.01
+
+
 class Vanderpol(BaseEnvironment, gym.Env):
     def __init__(self, args=False):
 
@@ -39,7 +42,7 @@ class Vanderpol(BaseEnvironment, gym.Env):
         )
 
         # Set support of noise distribution (which is triangular, zero-centered)
-        high = np.array([0.01], dtype=np.float32)
+        high = np.array([0.2], dtype=np.float32)
         self.noise_space = spaces.Box(low=-high, high=high, dtype=np.float32)
 
         # Set target set
