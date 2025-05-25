@@ -10,7 +10,7 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--folders', type=str, required=False,
+parser.add_argument('--folders', type=str, required=False, default='hard',
                     help="Can be either 'main', 'hard', 'sb3' (for stablebaselines), or a manual folder from which to parse all results")
 parser.add_argument('--timeout', type=int, required=False, default=1800,
                     help="Timeout (in seconds) that was used for the experiments to parse into the table")
@@ -19,16 +19,13 @@ parser.add_argument('--max_allowed_timeouts', type=int, required=False, default=
 
 parser = parser.parse_args()
 
-parser.folders = 'hard'
-parser.timeout = 1800
-
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 SB3_MODE = False
 if parser.folders == 'main':
     input_folders = ['main']
 elif parser.folders == 'hard':
-    input_folders = ['TripleIntegrator', 'PlanarRobot', 'Drone4D']  # TODO: Revert to Drone4D folder
+    input_folders = ['TripleIntegrator', 'PlanarRobot', 'Drone4D']
 elif parser.folders == 'sb3':
     input_folders = ['linsys_sb', 'linsys1_sb', 'pendulum_sb', 'collision_sb']
     SB3_MODE = True
