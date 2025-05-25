@@ -39,8 +39,7 @@ class Vanderpol(BaseEnvironment, gym.Env):
         )
 
         # Set support of noise distribution (which is triangular, zero-centered)
-        # TODO: enable noise again
-        high = np.array([0.0001 * 0.2], dtype=np.float32)
+        high = np.array([0.01], dtype=np.float32)
         self.noise_space = spaces.Box(low=-high, high=high, dtype=np.float32)
 
         # Set target set
