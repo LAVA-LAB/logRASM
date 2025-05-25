@@ -43,7 +43,7 @@ do
     # Lipschitz only
     timeout $TO python run.py --seed $seed $flags_triple $all_flags --probability_bound $p --no-exp_certificate;
   done
-  for p in 0.8 0.9 0.95 0.99 0.999 0.9999 0.999999
+  for p in 0.8 0.9 0.99 0.999 0.9999 0.999999
   do
     # Baseline
     timeout $TO python run.py --seed $seed $flags_triple $all_flags --probability_bound $p --no-exp_certificate --no-weighted --no-cplip;

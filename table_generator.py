@@ -47,13 +47,13 @@ all_models_x_dim = {
     'drone-4d': 4
 }
 all_models_u_dim = {
-    'linear-sys': 2,
-    'linear-sys (hard layout)': 2,
+    'linear-sys': 1,
+    'linear-sys (hard layout)': 1,
     'pendulum': 2,
     'collision-avoid': 2,
     'triple-integrator': 1,
     'planar-robot': 2,
-    'drone-4d': 4
+    'drone-4d': 2
 }
 
 # Get all result files from the specified folders
