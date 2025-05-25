@@ -16,7 +16,7 @@ all_flags="--eps_decrease 0.01 --ppo_max_policy_lipschitz 10 --expDecr_multiplie
 
 flags_triple="--model TripleIntegrator --logger_prefix TripleIntegrator --pretrain_total_steps 100000 --hidden_layers 3 --mesh_loss 0.005 --mesh_loss_decrease_per_iter 0.9 --mesh_verify_grid_init 0.04 --noise_partition_cells 6 --max_refine_factor 4 --verify_batch_size ${threeD_batch_size}"
 flags_planar="--model PlanarRobot --logger_prefix PlanarRobot --pretrain_total_steps 10000000 --hidden_layers 3 --mesh_loss 0.005 --mesh_loss_decrease_per_iter 0.9 --mesh_verify_grid_init 0.04 --noise_partition_cells 12 --max_refine_factor 4 --verify_batch_size ${threeD_batch_size}"
-flags_drone4D="--model Drone4D --layout 2 --logger_prefix Drone4D --pretrain_total_steps 1000000 --hidden_layers 3 --mesh_loss 0.01 --mesh_verify_grid_init 0.06 --refine_threshold 50000000 --verify_threshold 600000000 --noise_partition_cells 12 --max_refine_factor 2 --verify_batch_size ${verify_batch_size}"
+flags_drone4D="--model Drone4D --logger_prefix Drone4D --pretrain_total_steps 1000000 --hidden_layers 3 --mesh_loss 0.01 --mesh_verify_grid_init 0.06 --refine_threshold 50000000 --verify_threshold 600000000 --noise_partition_cells 12 --max_refine_factor 2 --verify_batch_size ${verify_batch_size}"
 
 
 # Triple integrator

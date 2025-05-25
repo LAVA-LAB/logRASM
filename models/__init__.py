@@ -7,6 +7,7 @@ from .mountain_car import MountainCar
 from .pendulum import Pendulum
 from .planar_robot import PlanarRobot
 from .triple_integrator import TripleIntegrator
+from .vanderpol import Vanderpol
 
 
 def get_model_fun(model_name):
@@ -26,6 +27,8 @@ def get_model_fun(model_name):
         envfun = Drone4D
     elif model_name == 'MyMountainCar':
         envfun = MountainCar
+    elif model_name == 'VanDerPol':
+        envfun = Vanderpol
     else:
         envfun = False
         assert False, f"Unknown model name: {model_name}"

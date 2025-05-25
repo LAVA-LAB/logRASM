@@ -321,7 +321,7 @@ class Verifier:
         :param lip_policy: Lipschitz constant of the policy network.
         :param lip_certificate: Lipschitz constant of the certificate network.
         :return:
-           - Kprime: combined Lipschitz constant of x \mapsto V(f(x, pi(x), noise)).
+           - Kprime: combined Lipschitz constant of x -> V(f(x, pi(x), noise)).
         '''
 
         if self.args.linfty and self.args.split_lip:

@@ -303,13 +303,13 @@ if __name__ == "__main__":
                         print('(!!!) Error: Failure detected, so terminate script')
                         sys.exit()
 
-            if not args.silent:
-                print('loss_val:', loss_val)
+        if not args.silent:
+            print('loss_val:', loss_val)
 
-                print(f'Number of times the learn.train_step function was compiled: {learn.train_step._cache_size()}')
-                print(f'\nLoss components in last train step:')
-                for ky, info in infos.items():
-                    print(f' - {ky}:', info)  # {info:.8f}')
+            print(f'Number of times the learn.train_step function was compiled: {learn.train_step._cache_size()}')
+            print(f'\nLoss components in last train step:')
+            for ky, info in infos.items():
+                print(f' - {ky}:', info)
 
         if i >= 1 and args.debug_train_step:
             learn.debug_train_step(args, samples_in_batch, iteration=i)

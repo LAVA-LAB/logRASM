@@ -11,66 +11,66 @@ from core.commons import RectangularSet, MultiRectangularSet
 from models.base_class import BaseEnvironment
 
 
-def angle_normalize(x):
-    return ((x + np.pi) % (2 * np.pi)) - np.pi
-
-
-class Pendulum(BaseEnvironment, gym.Env):
+class Vanderpol(BaseEnvironment, gym.Env):
     def __init__(self, args=False):
 
         self.variable_names = ['position', 'velocity']
         self.plot_dim = [0, 1]
 
-        self.max_torque = np.array([1])
+        self.max_force = np.array([1])
 
         # Pendulum parameters
-        self.delta = 0.05
-        self.G = 10
-        self.m = 0.15
-        self.l = 0.5
-        self.b = 0.1
-        self.max_speed = 5
+        self.delta = 0.1
 
-        self.lipschitz_f_l1_A = max(1 + self.delta * (self.delta + 1) * 1.5 * self.G / (2 * self.l),
-                                    (1 + self.delta) * (1 - self.b))  # 1.7875
-        self.lipschitz_f_l1_B = 6.0 / (self.m * self.l ** 2) * self.delta * (self.delta + 1)  # 8.4
+        # TODO: Correct Lipschitz computation
+        self.lipschitz_f_l1_A = 8
+        self.lipschitz_f_l1_B = 1
         self.lipschitz_f_l1 = max(self.lipschitz_f_l1_A, self.lipschitz_f_l1_B)
 
         # Set observation / state space
-        high = np.array([0.7, 0.7], dtype=np.float32)
+        high = np.array([5, 5], dtype=np.float32)
         self.state_space = RectangularSet(low=-high, high=high, dtype=np.float32)
 
         # This will throw a warning in tests/envs/test_envs in utils/env_checker.py as the space is not symmetric
-        #   or normalised as max_torque == 2 by default. Ignoring the issue here as the default settings are too old
+        #   or normalised as max_force == 2 by default. Ignoring the issue here as the default settings are too old
         #   to update to follow the openai gym api
         self.action_space = spaces.Box(
-            low=-self.max_torque, high=self.max_torque, shape=(1,), dtype=np.float32
+            low=-self.max_force, high=self.max_force, shape=(len(self.max_force),), dtype=np.float32
         )
 
         # Set support of noise distribution (which is triangular, zero-centered)
-        high = np.array([1, 1], dtype=np.float32)
+        # TODO: enable noise again
+        high = np.array([0.0001 * 0.2], dtype=np.float32)
         self.noise_space = spaces.Box(low=-high, high=high, dtype=np.float32)
 
         # Set target set
-        self.target_space = RectangularSet(low=np.array([-0.2, -0.2]), high=np.array([0.2, 0.2]), dtype=np.float32)
+        # self.target_space = RectangularSet(low=np.array([-1.4, -2.9]),
+        #                                    high=np.array([-0.7, -2.0]),
+        #                                    dtype=np.float32)
+        self.target_space = RectangularSet(low=np.array([-2.5, -1.5]),
+                                           high=np.array([-1, 1]),
+                                           dtype=np.float32)
 
         # Set initial state set
-        self.init_space = RectangularSet(low=np.array([-0.3, -0.3]), high=np.array([0.3, 0.3]), dtype=np.float32)
+        self.init_space = RectangularSet(low=np.array([0.7, 2.0]), high=np.array([1.4, 2.9]), dtype=np.float32)
+        # self.init_space = RectangularSet(low=np.array([-2, -2]), high=np.array([2, 2]), dtype=np.float32)
 
         # Set unsafe state set
         self.unsafe_space = MultiRectangularSet([
-            RectangularSet(low=np.array([-0.7, -0.7]), high=np.array([-0.6, 0]), dtype=np.float32),
-            RectangularSet(low=np.array([0.6, 0]), high=np.array([0.7, 0.7]), dtype=np.float32)
+            RectangularSet(low=np.array([-5, -5]), high=np.array([-4, 5]), dtype=np.float32),
+            RectangularSet(low=np.array([-5, 4]), high=np.array([5, 5]), dtype=np.float32),
+            RectangularSet(low=np.array([-5, -5]), high=np.array([5, -4]), dtype=np.float32),
+            RectangularSet(low=np.array([4, -5]), high=np.array([5, 5]), dtype=np.float32),
         ])
 
-        self.init_unsafe_dist = 0.3
+        self.init_unsafe_dist = 1.1
 
-        self.num_steps_until_reset = 1000
+        self.num_steps_until_reset = 100
 
         # Set to reset to in training (typically the initial state set, or the whole state space)
         self.reset_space = self.state_space
 
-        super(Pendulum, self).__init__()
+        super(Vanderpol, self).__init__()
 
     @partial(jit, static_argnums=(0,))
     def step_base(self, state, u, w):
@@ -78,16 +78,10 @@ class Pendulum(BaseEnvironment, gym.Env):
         Make a step in the dynamics. When defining a new environment, this the function that should be modified.
         '''
 
-        u = 2 * jnp.clip(u, -self.max_torque, self.max_torque)
+        u = jnp.clip(u, -self.max_force, self.max_force)
 
-        x1 = (1 - self.b) * state[1] + (
-                -1.5 * self.G * jnp.sin(state[0] + jnp.pi) / (2 * self.l) +
-                3.0 / (self.m * self.l ** 2) * u[0]
-        ) * self.delta + 0.02 * w[0]
-        x1 = jnp.clip(x1, -self.max_speed, self.max_speed)
-
-        # New angular position
-        x0 = state[0] + self.delta * x1 + 0.01 * w[1]
+        x0 = state[0] + state[1] * self.delta + w[0]
+        x1 = state[1] + (-state[0] + (1 - state[0] ** 2) * state[1]) * self.delta + u[0] + w[1]
 
         # Lower bound state
         state = jnp.clip(jnp.array([x0, x1]), self.state_space.low, self.state_space.high)
@@ -113,7 +107,7 @@ class Pendulum(BaseEnvironment, gym.Env):
 
         goal_reached = self.target_space.jax_contains(jnp.array([state]))[0]
         fail = self.unsafe_space.jax_contains(jnp.array([state]))[0]
-        costs = angle_normalize(state[0]) ** 2 + 0.1 * state[1] ** 2
+        costs = 1 - 100 * goal_reached + 100 * fail
 
         # Propagate dynamics
         state = self.step_base(state, u, noise)
@@ -134,22 +128,16 @@ class Pendulum(BaseEnvironment, gym.Env):
 
     def step(self, u):
         '''
-        Step in the gymnasium environment (only used for policy initialization with StableBaselines3).
+        Step in the gymnasium environment (only used for policy initialization with PPO).
         '''
 
         assert self.state is not None, "Call reset before using step method."
 
-        u = 2 * np.clip(u, -self.max_torque, self.max_torque)
+        u = np.clip(u, -self.max_force, self.max_force)
         w = self.sample_triangular_noise_numpy()
 
-        x1 = (1 - self.b) * self.state[1] + (
-                -1.5 * self.G * np.sin(self.state[0] + np.pi) / (2 * self.l) +
-                3.0 / (self.m * self.l ** 2) * u[0]
-        ) * self.delta + 0.02 * w[0]
-        x1 = np.clip(x1, -self.max_speed, self.max_speed)
-
-        # New angular position
-        x0 = self.state[0] + self.delta * x1 + 0.01 * w[1]
+        x0 = self.state[0] + self.state[1] * self.delta + w[0]
+        x1 = self.state[1] + (-self.state[0] + (1 - self.state[0] ** 2) * self.state[1]) * self.delta + u + w[1]
 
         # Clip state
         self.state = np.clip(np.array([x0, x1]), self.state_space.low, self.state_space.high)
@@ -161,10 +149,10 @@ class Pendulum(BaseEnvironment, gym.Env):
         terminated = fail
 
         if fail:
-            costs = 5
+            costs = 100
         elif goal_reached:
-            costs = -5
+            costs = -100
         else:
-            costs = -1 + np.sqrt(angle_normalize(self.state[0]) ** 2 + 0.1 * self.state[1] ** 2)
+            costs = 1
 
         return np.array(self.state, dtype=np.float32), -costs, terminated, False, {}
