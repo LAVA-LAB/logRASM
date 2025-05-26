@@ -11,7 +11,7 @@ from core.commons import RectangularSet, MultiRectangularSet
 from models.base_class import BaseEnvironment
 
 
-# python run.py --model VanDerPol --probability_bound 0.9 --pretrain_method PPO_JAX --pretrain_total_steps 1000000 --mesh_loss 0.0001 --exp_certificate --plot_intermediate --mesh_verify_grid_init 0.01 --expDecr_multiplier 10 --epochs 100 --eps_decrease 0.01
+# python run.py --model VanDerPol --probability_bound 0.9 --pretrain_method PPO_JAX --pretrain_total_steps 1000000 --mesh_loss 0.0001 --exp_certificate --plot_intermediate --mesh_verify_grid_init 0.01 --expDecr_multiplier 10 --epochs 100 --eps_decrease 0.01 --noise_partition_cells 96
 
 
 class Vanderpol(BaseEnvironment, gym.Env):
