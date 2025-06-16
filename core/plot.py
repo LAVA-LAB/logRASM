@@ -139,7 +139,7 @@ def plot_boxes(env, ax, plot_dimensions=[0, 1], labels=False, latex=False, size=
     return
 
 
-def plot_traces(env, Policy_state, key, num_traces=10, len_traces=1000, folder=False, filename=False, title=True):
+def plot_traces(env, Policy_state, key, num_traces=100, len_traces=100, folder=False, filename=False, title=True):
     '''
     Plot simulated traces under the given policy.
 
@@ -170,7 +170,7 @@ def plot_traces(env, Policy_state, key, num_traces=10, len_traces=1000, folder=F
 
         key, subkey = jax.random.split(key)
 
-        x = env.init_space.sample_single(subkey)
+        x = env.state_space.sample_single(subkey)
         traces[0, i] = x
 
         succes = False
@@ -182,6 +182,12 @@ def plot_traces(env, Policy_state, key, num_traces=10, len_traces=1000, folder=F
 
             # Make step in environment
             traces[j + 1, i], key = env.step_noise_key(state, key, action)
+
+            # For debugging
+            # env.state = traces[j, i]
+            # next_state = env.step(action)
+            # print('JAX:', traces[j + 1, i])
+            # print('GYM:', next_state, '\n')
 
             if env.target_space.contains(np.array([traces[j + 1, i]]), return_indices=True)[0]:
                 succes = True

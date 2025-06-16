@@ -584,6 +584,7 @@ class Verifier:
             C = Vx_center_violations < 1 / (1 - self.args.probability_bound)
             hard_violation_idxs = (Vdiff_center_violations + self.args.mesh_refine_min * (
                     Kprime * softplus_lip_violations) > 0) * C
+        hardViolations = Vdiff_center_violations[hard_violation_idxs]
         print(f'\n- Check hard expected decrease violations at {np.sum(C):,} points (out of {len(Vx_center_violations):,} violations)')
 
         if self.args.plot_intermediate:
@@ -596,9 +597,7 @@ class Verifier:
             print("-- Value of E[V(x_{k+1})] - V(x_k) at each center x_k: "
                   f"min={np.min(Vdiff_center_violations[C]):.8f}; mean={np.mean(Vdiff_center_violations[C]):.8f}; max={np.max(Vdiff_center_violations[C]):.8f}")
 
-        #####
-
-        if self.args.policy_patching and x_decrease_violations[hard_violation_idxs] > 0:
+        if self.args.policy_patching and len(x_decrease_violations[hard_violation_idxs]) > 0:
 
             actions_min = np.tile(self.env.action_space.low, (len(x_decrease_violations), 1))
             actions_max = np.tile(self.env.action_space.high, (len(x_decrease_violations), 1))

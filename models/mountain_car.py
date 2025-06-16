@@ -26,8 +26,8 @@ class MountainCar(BaseEnvironment, gym.Env):
         # Time discretization step
         self.delta = 10
 
-        self.min_action = np.array([-1.0])
-        self.max_action = np.array([1.0])
+        self.min_action = np.array([-1.0], dtype=np.float32)
+        self.max_action = np.array([1.0], dtype=np.float32)
         self.min_position = -1.2 - 0.2
         self.max_position = 0.6
         self.v_scaling = 45  # Scaled from the original, which is 0.07
@@ -72,7 +72,7 @@ class MountainCar(BaseEnvironment, gym.Env):
         #   or normalised as max_torque == 2 by default. Ignoring the issue here as the default settings are too old
         #   to update to follow the openai gym api
         self.action_space = spaces.Box(
-            low=self.min_action, high=self.max_action, shape=(1,), dtype=np.float32
+            low=np.astype(self.min_action, np.float32), high=np.astype(self.max_action, np.float32), shape=(1,), dtype=np.float32
         )
 
         # Set support of noise distribution (which is triangular, zero-centered)

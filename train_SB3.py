@@ -62,6 +62,7 @@ gym.register(
 )
 
 
+# TODO: Validate this function
 def torch_to_jax(jax_policy_state, weights, biases):
     for i, (w, b) in enumerate(zip(weights, biases)):
         w = w.cpu().detach().numpy()
@@ -301,7 +302,7 @@ def pretrain_policy(args, env_name, cwd, RL_method, seed, num_envs, total_steps,
 
     ######
     # Export JAX policy as Orbax checkpoint
-    ckpt_export_file = f"ckpt/{env_name}_layout={args.layout}_alg={RL_method}_layers={args.hidden_layers}_neurons={args.neurons_per_layer}_outfn={activation_fn_txt[-1]}_seed={seed}_steps={total_steps}"
+    ckpt_export_file = f"ckpt/{env_name}_layout={args.layout}_alg={RL_method}_layers={args.policy_hidden_layers}_neurons={args.policy_neurons_per_layer}_outfn={activation_fn_txt[-1]}_seed={seed}_steps={total_steps}"
     checkpoint_path = Path(cwd, ckpt_export_file)
 
     # Additional configuration info (stored in checkpoint)
@@ -342,9 +343,9 @@ if __name__ == "__main__":
                         help="Number of parallel environments to train with (>1 does not work for all algorithms)")
 
     ### NEURAL NETWORK ARCHITECTURE
-    parser.add_argument('--neurons_per_layer', type=int, default=128,
+    parser.add_argument('--policy_neurons_per_layer', type=int, default=128,
                         help="Number of neurons per (hidden) layer.")
-    parser.add_argument('--hidden_layers', type=int, default=3,
+    parser.add_argument('--policy_hidden_layers', type=int, default=3,
                         help="Number of hidden layers.")
 
     parser.add_argument('--allow_tanh', action=argparse.BooleanOptionalAction, default=False,
@@ -362,9 +363,9 @@ if __name__ == "__main__":
     else:
         METHODS = [str(args.algorithm)]
 
-    policy_size = [args.neurons_per_layer for _ in range(args.hidden_layers)]
-    activation_fn_jax = [nn.relu for _ in range(args.hidden_layers)]
-    activation_fn_txt = ['relu' for _ in range(args.hidden_layers)]
+    policy_size = [args.policy_neurons_per_layer for _ in range(args.policy_hidden_layers)]
+    activation_fn_jax = [nn.relu for _ in range(args.policy_hidden_layers)]
+    activation_fn_txt = ['relu' for _ in range(args.policy_hidden_layers)]
     activation_fn_torch = torch.nn.ReLU
 
     model = {}

@@ -177,8 +177,9 @@ class RectangularSet:
 
         self.low = np.array(low, dtype=dtype)
         self.high = np.array(high, dtype=dtype)
+        self.max_abs = np.maximum(np.abs(self.low), np.abs(self.high))
         self.center = (self.high + self.low) / 2
-        self.gymspace = spaces.Box(low=low, high=high, dtype=dtype)
+        self.gymspace = spaces.Box(low=self.low, high=self.high, dtype=dtype)
         self.dimension = len(self.low)
         self.volume = np.prod(self.high - self.low)
         if not fix_dimensions:
@@ -298,7 +299,7 @@ class RectangularSet:
         :param delta: float. Expand the rectangular set in each dimension by delta.
         :return: Jax array containing the samples.
         '''
-        
+
         samples = jax.random.uniform(rng, (N, self.dimension), minval=self.low - delta, maxval=self.high + delta)
 
         return samples

@@ -153,7 +153,7 @@ def parse_arguments(linfty, datetime, cwd):
     ### ARGUMENTS TO EXPERIMENT WITH ###
     parser.add_argument('--local_refinement', action=argparse.BooleanOptionalAction, default=True,
                         help="If True, local grid refinements are performed")
-    parser.add_argument('--policy_patching', action=argparse.BooleanOptionalAction, default=True,
+    parser.add_argument('--policy_patching', action=argparse.BooleanOptionalAction, default=False,
                         help="If True, try to 'patch policies in the verifier to mitigate counterexamples")
     parser.add_argument('--perturb_counterexamples', action=argparse.BooleanOptionalAction, default=True,
                         help="If True, counterexamples are perturbed before being added to the counterexample buffer")
@@ -171,6 +171,14 @@ def parse_arguments(linfty, datetime, cwd):
                         help="Number of neurons per (hidden) layer")
     parser.add_argument('--hidden_layers', type=int, default=2,
                         help="Number of hidden layers")
+    parser.add_argument('--policy_neurons_per_layer', type=int, default=-1,
+                        help="Number of neurons per (hidden) layer for the policy (overwrites the general option above)")
+    parser.add_argument('--policy_hidden_layers', type=int, default=-1,
+                        help="Number of hidden layers for the policy (overwrites the general option above)")
+    parser.add_argument('--certificate_neurons_per_layer', type=int, default=-1,
+                        help="Number of neurons per (hidden) layer for the certificate (overwrites the general option above)")
+    parser.add_argument('--certificate_hidden_layers', type=int, default=-1,
+                        help="Number of hidden layers for the certificate (overwrites the general option above)")
 
     ## LIPSCHITZ COEFFICIENT ARGUMENTS
     parser.add_argument('--split_lip', action=argparse.BooleanOptionalAction, default=True,
@@ -184,6 +192,16 @@ def parse_arguments(linfty, datetime, cwd):
     args.linfty = linfty  # Use L1 norm for Lipschitz constants (there is unused but experimental support for L_infty norms)
     args.start_datetime = datetime
     args.cwd = cwd
+
+    # Use the general setting unless policy or certificate size is individually specified
+    if args.policy_neurons_per_layer <= 0:
+        args.policy_neurons_per_layer = args.neurons_per_layer
+    if args.policy_hidden_layers <= 0:
+        args.policy_hidden_layers = args.neurons_per_layer
+    if args.certificate_neurons_per_layer <= 0:
+        args.certificate_neurons_per_layer = args.neurons_per_layer
+    if args.certificate_hidden_layers <= 0:
+        args.certificate_hidden_layers = args.neurons_per_layer
 
     # Set refinement factor depending on whether local refinement is enabled
     if args.local_refinement and args.max_refine_factor != args.max_refine_factor:  # a != a means that a is NaN

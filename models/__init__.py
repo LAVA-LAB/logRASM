@@ -1,4 +1,5 @@
 # Load the benchmarks from the subfiles
+from .cartpole import Cartpole
 from .collision_avoidance import CollisionAvoidance
 from .drone4D import Drone4D
 from .linearsystem import LinearSystem
@@ -29,6 +30,8 @@ def get_model_fun(model_name):
         envfun = MountainCar
     elif model_name == 'VanDerPol':
         envfun = Vanderpol
+    elif model_name == 'Cartpole':
+        envfun = Cartpole
     else:
         envfun = False
         assert False, f"Unknown model name: {model_name}"

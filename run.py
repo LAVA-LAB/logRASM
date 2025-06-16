@@ -85,9 +85,9 @@ if __name__ == "__main__":
 
     # %% ### PPO policy initialization ###
 
-    pi_neurons_per_layer = [args.neurons_per_layer for _ in range(args.hidden_layers)]
-    pi_act_funcs_jax = [nn.relu for _ in range(args.hidden_layers)]
-    pi_act_funcs_txt = ['relu' for _ in range(args.hidden_layers)]
+    pi_neurons_per_layer = [args.policy_neurons_per_layer for _ in range(args.policy_hidden_layers)]
+    pi_act_funcs_jax = [nn.relu for _ in range(args.policy_hidden_layers)]
+    pi_act_funcs_txt = ['relu' for _ in range(args.policy_hidden_layers)]
 
     if args.load_ckpt != '':
         # Load existing pretrained policy
@@ -170,13 +170,13 @@ if __name__ == "__main__":
     # Set the mesh_loss
     args = set_mesh_loss(args, env)
 
-    V_neurons_withOut = [args.neurons_per_layer for _ in range(args.hidden_layers)] + [1]
+    V_neurons_withOut = [args.certificate_neurons_per_layer for _ in range(args.certificate_hidden_layers)] + [1]
     if args.exp_certificate:
-        V_act_fn_withOut = [nn.relu for _ in range(args.hidden_layers)] + [None]
-        V_act_fn_withOut_txt = ['relu' for _ in range(args.hidden_layers)] + ['None']
+        V_act_fn_withOut = [nn.relu for _ in range(args.certificate_hidden_layers)] + [None]
+        V_act_fn_withOut_txt = ['relu' for _ in range(args.certificate_hidden_layers)] + ['None']
     else:
-        V_act_fn_withOut = [nn.relu for _ in range(args.hidden_layers)] + [nn.softplus]
-        V_act_fn_withOut_txt = ['relu' for _ in range(args.hidden_layers)] + ['softplus']
+        V_act_fn_withOut = [nn.relu for _ in range(args.certificate_hidden_layers)] + [nn.softplus]
+        V_act_fn_withOut_txt = ['relu' for _ in range(args.certificate_hidden_layers)] + ['softplus']
 
     # Load policy configuration and
     Policy_config = load_policy_config(checkpoint_path, key='config')
@@ -323,8 +323,8 @@ if __name__ == "__main__":
             if not args.silent:
                 print('- Plot traces...')
             filename = f"{args.start_datetime}_policy_traces_iteration={i}"
-            plot_traces(env, Policy_state, key=jax.random.PRNGKey(2), folder=output_folder, filename=filename,
-                        title=(not args.presentation_plots))
+            traces = plot_traces(env, Policy_state, key=jax.random.PRNGKey(2), folder=output_folder, filename=filename,
+                                 title=(not args.presentation_plots))
 
             # Plot vector plot of policy
             if env.state_dim == 2:

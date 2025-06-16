@@ -183,4 +183,9 @@ def compute_lipschitz_jacobian(J, G):
     lipschitz_f_l1_B = np.max(np.sum(np.abs(G), axis=0))
     lipschitz_f_l1 = max(lipschitz_f_l1_A, lipschitz_f_l1_B)
 
+    print('- Policy Lipschitz constant (computed using Jacobian):')
+    print(f'-- With respect to x: {lipschitz_f_l1_A:.3f}')
+    print(f'-- With respect to u: {lipschitz_f_l1_B:.3f}')
+    print(f'-- With respect to x and u: {lipschitz_f_l1:.3f}\n')
+
     return lipschitz_f_l1, float('nan'), lipschitz_f_l1_A, float('nan'), lipschitz_f_l1_B, float('nan')

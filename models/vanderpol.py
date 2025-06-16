@@ -8,31 +8,46 @@ from gymnasium import spaces
 from jax import jit
 
 from core.commons import RectangularSet, MultiRectangularSet
-from models.base_class import BaseEnvironment
+from models.base_class import BaseEnvironment, compute_lipschitz_jacobian
 
 
-# python run.py --model VanDerPol --probability_bound 0.9 --pretrain_method PPO_JAX --pretrain_total_steps 1000000 --mesh_loss 0.0001 --exp_certificate --plot_intermediate --mesh_verify_grid_init 0.01 --expDecr_multiplier 10 --epochs 100 --eps_decrease 0.01 --noise_partition_cells 96
+# python run.py --model VanDerPol --probability_bound 0.9 --pretrain_method PPO_JAX --pretrain_total_steps 1000000 --mesh_loss 0.0001 --exp_certificate --plot_intermediate --mesh_verify_grid_init 0.01 --expDecr_multiplier 10 --epochs 100 --eps_decrease 0.01 --noise_partition_cells 160
 
 
 class Vanderpol(BaseEnvironment, gym.Env):
+    # TODO: Adapt to dynamics + problem from "ARCH-COMP22 Category Report: Stochastic Models" (https://easychair.org/publications/paper/Nzr4)
+
     def __init__(self, args=False):
 
         self.variable_names = ['position', 'velocity']
         self.plot_dim = [0, 1]
 
-        self.max_force = np.array([1])
+        self.max_force = np.array([1], dtype=np.float32)
 
         # Pendulum parameters
         self.delta = 0.1
 
-        # TODO: Correct Lipschitz computation
-        self.lipschitz_f_l1_A = 8
-        self.lipschitz_f_l1_B = 1
-        self.lipschitz_f_l1 = max(self.lipschitz_f_l1_A, self.lipschitz_f_l1_B)
-
         # Set observation / state space
         high = np.array([5, 5], dtype=np.float32)
         self.state_space = RectangularSet(low=-high, high=high, dtype=np.float32)
+
+        # TODO: Double-check Lipschitz computation
+        # Entries of Jacobian
+        dx0dx0 = 1
+        dx0dx1 = self.delta
+        dx0du0 = 0
+        dx1dx0 = -self.delta - 2 * self.state_space.max_abs[0] * self.state_space.max_abs[1] * self.delta
+        dx1dx1 = 1 + (1 - self.state_space.max_abs[0] ** 2) * self.delta
+        dx1du0 = self.delta
+
+        # Set Jacobian
+        J = np.array([[dx0dx0, dx0dx1],
+                      [dx1dx0, dx1dx1]])
+        G = np.array([[dx0du0],
+                      [dx1du0]])
+
+        # Compute Lipschitz constants from the Jacobians J and G
+        self.lipschitz_f_l1, _, self.lipschitz_f_l1_A, _, self.lipschitz_f_l1_B, _ = compute_lipschitz_jacobian(J, G)
 
         # This will throw a warning in tests/envs/test_envs in utils/env_checker.py as the space is not symmetric
         #   or normalised as max_force == 2 by default. Ignoring the issue here as the default settings are too old
@@ -83,7 +98,7 @@ class Vanderpol(BaseEnvironment, gym.Env):
         u = jnp.clip(u, -self.max_force, self.max_force)
 
         x0 = state[0] + state[1] * self.delta + w[0]
-        x1 = state[1] + (-state[0] + (1 - state[0] ** 2) * state[1]) * self.delta + u[0] + w[1]
+        x1 = state[1] + (-state[0] + (1 - state[0] ** 2) * state[1] + u[0]) * self.delta + w[1]
 
         # Lower bound state
         state = jnp.clip(jnp.array([x0, x1]), self.state_space.low, self.state_space.high)
@@ -139,7 +154,7 @@ class Vanderpol(BaseEnvironment, gym.Env):
         w = self.sample_triangular_noise_numpy()
 
         x0 = self.state[0] + self.state[1] * self.delta + w[0]
-        x1 = self.state[1] + (-self.state[0] + (1 - self.state[0] ** 2) * self.state[1]) * self.delta + u + w[1]
+        x1 = self.state[1] + (-self.state[0] + (1 - self.state[0] ** 2) * self.state[1] + u) * self.delta + w[1]
 
         # Clip state
         self.state = np.clip(np.array([x0, x1]), self.state_space.low, self.state_space.high)

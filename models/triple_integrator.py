@@ -17,7 +17,7 @@ class TripleIntegrator(BaseEnvironment, gym.Env):
         self.variable_names = ['absement', 'position', 'velocity']
         self.plot_dim = [0, 1]
 
-        self.max_torque = np.array([1])
+        self.max_torque = np.array([1], dtype=np.float32)
 
         self.A = np.array([
             [1, 0.045, 0],

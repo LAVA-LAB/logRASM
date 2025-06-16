@@ -17,7 +17,7 @@ class Drone4D(BaseEnvironment, gym.Env):
         self.variable_names = ['x1', 'v1', 'x2', 'v2']
         self.plot_dim = [0, 2]
 
-        self.max_torque = np.array([0.5, 0.5])
+        self.max_torque = np.array([0.5, 0.5], dtype=np.float32)
         self.tau = 0.5
 
         # Nonlinear damping constants

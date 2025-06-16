@@ -28,7 +28,7 @@ SB3_MODE = False
 if parser.folders == 'main':
     input_folders = ['main']
 elif parser.folders == 'hard':
-    input_folders = ['TripleIntegrator', 'PlanarRobot', 'Drone4D']  # TODO: Revert to Drone4D folder
+    input_folders = ['TripleIntegrator', 'PlanarRobot', 'Drone4D']
 elif parser.folders == 'sb3':
     input_folders = ['linsys_sb', 'linsys1_sb', 'pendulum_sb', 'collision_sb']
     SB3_MODE = True

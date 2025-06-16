@@ -17,7 +17,7 @@ class CollisionAvoidance(BaseEnvironment, gym.Env):
         self.variable_names = ['x', 'y']
         self.plot_dim = [0, 1]
 
-        self.max_torque = np.array([1, 1])
+        self.max_torque = np.array([1, 1], dtype=np.float32)
 
         self.lipschitz_f_l1_A = 3
         self.lipschitz_f_l1_B = 0.2
